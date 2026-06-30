@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-23 Stress Calculator | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 300px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #ccc; }
+        .pass { border-left-color: #28a745; }
+        .fail { border-left-color: #dc3545; }
+        .status-badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; }
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        .bar-container { background: #e9ecef; width: 100%; height: 20px; border-radius: 10px; margin-top: 10px; overflow: hidden; position: relative; }
+        .bar-fill { height: 100%; transition: width 0.3s ease; }
+        .bar-limit { position: absolute; height: 100%; width: 2px; background: red; top: 0; z-index: 10; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-23 Stress Evaluation</h2>
+    
+    <div class="input-section">
+        <h3>Material & Applied Stresses (MPa)</h3>
+        <div class="form-group"><label>Allowable Stress (S)</label><input type="number" id="valS" value="138" oninput="calculate()"></div>
+        <div class="form-group"><label>Yield Strength (Sy)</label><input type="number" id="valSy" value="260" oninput="calculate()"></div>
+        <div class="form-group"><label>Applied General Membrane (Pm)</label><input type="number" id="valPm" value="95" oninput="calculate()"></div>
+        <div class="form-group"><label>Applied Local Membrane (PL)</label><input type="number" id="valPL" value="110" oninput="calculate()"></div>
+        <div class="form-group"><label>Applied Primary Bending (Pb)</label><input type="number" id="valPb" value="60" oninput="calculate()"></div>
+        <div class="form-group"><label>Applied Shear (Tau)</label><input type="number" id="valTau" value="75" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        <h3>Compliance Results</h3>
+        <div id="resPm" class="result-card"></div>
+        <div id="resPLPb" class="result-card"></div>
+        <div id="resTau" class="result-card"></div>
+        <p><strong>Factor of Safety against Yield (Sy / Pm): </strong> <span id="fos"></span></p>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const S = parseFloat(document.getElementById('valS').value) || 0;
+        const Sy = parseFloat(document.getElementById('valSy').value) || 0;
+        const Pm = parseFloat(document.getElementById('valPm').value) || 0;
+        const PL = parseFloat(document.getElementById('valPL').value) || 0;
+        const Pb = parseFloat(document.getElementById('valPb').value) || 0;
+        const Tau = parseFloat(document.getElementById('valTau').value) || 0;
+
+        updateCard('resPm', 'General Membrane [UG-23(a)]', Pm, S);
+        updateCard('resPLPb', 'Local + Bending [UG-23(e)]', PL + Pb, 1.5 * S);
+        updateCard('resTau', 'Maximum Shear [UG-23(d)]', Tau, 0.8 * S);
+        
+        document.getElementById('fos').innerText = Pm > 0 ? (Sy / Pm).toFixed(2) : "N/A";
+    }
+
+    function updateCard(elementId, title, applied, limit) {
+        const isPass = applied <= limit;
+        const maxScale = Math.max(limit * 1.2, applied * 1.1); // Scale bar dynamically
+        const fillPercent = Math.min((applied / maxScale) * 100, 100);
+        const limitPercent = (limit / maxScale) * 100;
+
+        const card = document.getElementById(elementId);
+        card.className = `result-card ${isPass ? 'pass' : 'fail'}`;
+        
+        card.innerHTML = `
+            <div>
+                <strong>${title}</strong>
+                <span class="status-badge ${isPass ? 'bg-pass' : 'bg-fail'}">${isPass ? 'PASS' : 'FAIL'}</span>
+            </div>
+            <div style="font-size: 0.85em; color: #555; margin-top: 5px;">
+                Applied: ${applied.toFixed(1)} MPa | Limit: ${limit.toFixed(1)} MPa
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill ${isPass ? 'bg-pass' : 'bg-fail'}" style="width: ${fillPercent}%;"></div>
+                <div class="bar-limit" style="left: ${limitPercent}%;" title="Limit Threshold"></div>
+            </div>
+        `;
+    }
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
