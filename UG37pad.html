@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-37 Pad Sizer | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 320px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #0056b3; }
+        .val-display { font-size: 1.8em; font-weight: bold; color: #0056b3; margin: 10px 0; }
+        .status-badge { display: inline-block; padding: 8px 12px; border-radius: 4px; font-size: 0.9em; font-weight: bold; color: white; width: 100%; text-align: center; box-sizing: border-box; }
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        
+        /* Bar Chart Styles for limit comparison */
+        .bar-wrap { margin-bottom: 15px; margin-top: 20px;}
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 25px; overflow: hidden; position: relative;}
+        .bar-fill { height: 100%; transition: width 0.4s ease; background-color: #0056b3;}
+        .fill-fail { background-color: #dc3545; }
+        .limit-line { position: absolute; top: 0; bottom: 0; width: 2px; background-color: #333; z-index: 10; border-right: 1px dashed white;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-37: Reinforcing Pad Sizing</h2>
+    
+    <div class="input-section">
+        <h3>Design Inputs</h3>
+        <p style="font-size: 0.85em; color: #666;">Enter the deficit area calculated from the area replacement rules.</p>
+        
+        <div class="form-group"><label>Deficit Area (A_def) [mm²]</label><input type="number" id="valAdef" value="1500" oninput="calculate()"></div>
+        <div class="form-group"><label>Finished Opening Diameter (d) [mm]</label><input type="number" id="valD" value="200" oninput="calculate()"></div>
+        
+        <h4 style="margin-bottom: 5px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Iteration</h4>
+        <div class="form-group">
+            <label>Select Pad Plate Thickness (tp) [mm]: <span id="lblTp">10</span> mm</label>
+            <input type="range" id="valTp" min="3" max="50" step="1" value="10" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="output-section">
+        <h3>Required Pad Dimensions</h3>
+        
+        <div class="result-card">
+            <div><strong>Required Pad Outer Diameter (Dp)</strong></div>
+            <div class="val-display" id="outDp">-- mm</div>
+            <div style="font-size: 0.85em; color: #555;">Max Code Limit (2d) = <span id="outLimit">--</span> mm</div>
+        </div>
+
+        <div id="statusBadge" class="status-badge">--</div>
+
+        <div class="bar-wrap">
+            <div class="bar-label"><span>Pad O.D. relative to 2d Limit</span></div>
+            <div class="bar-bg">
+                <div id="barDp" class="bar-fill"></div>
+                <div id="limitMarker" class="limit-line" title="2d Boundary Limit"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const A_def = parseFloat(document.getElementById('valAdef').value) || 0;
+        const d = parseFloat(document.getElementById('valD').value) || 0;
+        const tp = parseFloat(document.getElementById('valTp').value) || 0;
+
+        document.getElementById('lblTp').innerText = tp;
+
+        if (d <= 0 || tp <= 0) return;
+
+        // Calculate required pad diameter
+        const Dp = d + (A_def / tp);
+        
+        // Calculate max effective boundary limit (2d)
+        const D_limit = 2 * d;
+
+        document.getElementById('outDp').innerText = Dp.toFixed(1) + " mm";
+        document.getElementById('outLimit').innerText = D_limit.toFixed(1);
+
+        const isPass = Dp <= D_limit;
+        const badge = document.getElementById('statusBadge');
+        const barDp = document.getElementById('barDp');
+        const limitMarker = document.getElementById('limitMarker');
+
+        if (isPass) {
+            badge.className = "status-badge bg-pass";
+            badge.innerText = "PASS: Pad fits within effective boundaries.";
+            barDp.className = "bar-fill";
+        } else {
+            badge.className = "status-badge bg-fail";
+            badge.innerText = "FAIL: Pad too wide. Increase plate thickness.";
+            barDp.className = "bar-fill fill-fail";
+        }
+
+        // Scale bar dynamically based on the larger value
+        const maxScale = Math.max(Dp, D_limit) * 1.1; 
+        
+        if (maxScale > 0) {
+            barDp.style.width = `${(Dp / maxScale) * 100}%`;
+            limitMarker.style.left = `${(D_limit / maxScale) * 100}%`;
+        }
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
