@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-34 Flat Heads Calculator | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 320px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .result-card { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #0056b3; }
+        .thickness-val { font-size: 2em; font-weight: bold; color: #0056b3; margin: 10px 0; }
+        .code-ref { font-size: 0.85em; color: #666; background: #e9ecef; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .note { font-size: 0.85em; color: #666; font-style: italic; margin-top: 4px; display: block; }
+        
+        /* Comparison Chart Styles */
+        .chart-box { margin-top: 25px; padding-top: 20px; border-top: 1px solid #ddd; }
+        .bar-wrap { margin-bottom: 15px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 30px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; padding-left: 10px; color: white; font-weight: bold; font-size: 0.85em; box-sizing: border-box; }
+        .fill-flat { background-color: #dc3545; } /* Red for heavy/thick */
+        .fill-ellip { background-color: #28a745; } /* Green for efficient */
+        .insight-text { background: #e2e8f0; padding: 12px; border-radius: 6px; font-size: 0.95em; color: #334155; border-left: 4px solid #475569; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-34 Unstayed Flat Heads</h2>
+    
+    <div class="input-section">
+        <h3>Geometry & Design Inputs</h3>
+        <div class="form-group"><label>Internal Design Pressure (P) [MPa]</label><input type="number" id="valP" value="2.5" step="0.1" oninput="calculate()"></div>
+        <div class="form-group"><label>Effective Diameter (d) [mm]</label><input type="number" id="valD" value="800" oninput="calculate()">
+            <span class="note">Typically the inside diameter of the shell.</span>
+        </div>
+        
+        <div class="form-group">
+            <label>Attachment Factor (C)</label>
+            <select id="valC" onchange="calculate()">
+                <option value="0.13">0.13 - Integral/Forged (Fig UG-34 b, c, d)</option>
+                <option value="0.17" selected>0.17 - Flanged Integral (Fig UG-34 a)</option>
+                <option value="0.20">0.20 - Welded, Partial Pen. (Fig UG-34 h)</option>
+                <option value="0.33">0.33 - Welded, Full Pen. Corner (Fig UG-34 e, f, g)</option>
+            </select>
+            <span class="note">Ref: Figure UG-34 sketches.</span>
+        </div>
+
+        <h3>Material Parameters</h3>
+        <div class="form-group"><label>Allowable Stress (S) [MPa]</label><input type="number" id="valS" value="138" oninput="calculate()"></div>
+        <div class="form-group"><label>Joint Efficiency (E) [0.70 - 1.00]</label><input type="number" id="valE" value="1.0" step="0.05" max="1" min="0.5" oninput="calculate()"></div>
+        <div class="form-group"><label>Corrosion Allowance (Ca) [mm]</label><input type="number" id="valCa" value="3.0" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        <h3>Evaluation Results</h3>
+        
+        <div class="result-card">
+            <div><strong>Required Nominal Thickness</strong> <span class="code-ref">UG-34(c)(2)</span></div>
+            <div class="thickness-val" id="outT">-- mm</div>
+            <div style="font-size: 0.9em; color: #555;">(Includes <span id="lblCa">3</span> mm Corrosion Allowance)</div>
+        </div>
+
+        <div class="chart-box">
+            <h4 style="margin-top:0; color:#444;">Bending vs. Membrane Stress Penalty</h4>
+            <p style="font-size: 0.85em; color: #666;">Flat heads rely on bending stiffness, making them highly inefficient compared to formed heads.</p>
+            
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Flat Head (UG-34)</span> <span id="lblFlat">-- mm</span></div>
+                <div class="bar-bg"><div id="barFlat" class="bar-fill fill-flat" style="width: 100%;"></div></div>
+            </div>
+            
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Equivalent 2:1 Ellipsoidal Head (UG-32)</span> <span id="lblEllip">-- mm</span></div>
+                <div class="bar-bg"><div id="barEllip" class="bar-fill fill-ellip" style="width: 0%;"></div></div>
+            </div>
+
+            <div class="insight-text" id="insightText">
+                --
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        const d = parseFloat(document.getElementById('valD').value) || 0;
+        const C = parseFloat(document.getElementById('valC').value) || 0;
+        const S = parseFloat(document.getElementById('valS').value) || 0;
+        const E = parseFloat(document.getElementById('valE').value) || 0;
+        const Ca = parseFloat(document.getElementById('valCa').value) || 0;
+
+        document.getElementById('lblCa').innerText = Ca;
+
+        if (S <= 0 || E <= 0 || d <= 0) {
+            document.getElementById('outT').innerText = "Invalid Inputs";
+            return;
+        }
+
+        // 1. Calculate Flat Head Thickness (UG-34)
+        const insideRoot = (C * P) / (S * E);
+        const t_flat_req = insideRoot > 0 ? d * Math.sqrt(insideRoot) : 0;
+        const t_flat_nom = t_flat_req + Ca;
+
+        // 2. Calculate Theoretical 2:1 Ellipsoidal Head (UG-32)
+        const denom_ellip = (2 * S * E) - (0.2 * P);
+        const t_ellip_req = denom_ellip > 0 ? (P * d) / denom_ellip : 0;
+        const t_ellip_nom = t_ellip_req + Ca;
+
+        // Update Text
+        document.getElementById('outT').innerText = t_flat_req > 0 ? t_flat_nom.toFixed(2) + " mm" : "N/A";
+
+        // Update Charts
+        document.getElementById('lblFlat').innerText = t_flat_req > 0 ? t_flat_nom.toFixed(2) + " mm" : "--";
+        document.getElementById('lblEllip').innerText = t_ellip_req > 0 ? t_ellip_nom.toFixed(2) + " mm" : "--";
+
+        const maxScale = Math.max(t_flat_nom, t_ellip_nom) * 1.05; // 5% padding
+        
+        document.getElementById('barFlat').style.width = maxScale > 0 ? `${(t_flat_nom / maxScale) * 100}%` : "0%";
+        document.getElementById('barEllip').style.width = maxScale > 0 ? `${(t_ellip_nom / maxScale) * 100}%` : "0%";
+
+        // Generate Insight
+        if (t_flat_nom > 0 && t_ellip_nom > 0) {
+            const multiplier = (t_flat_req / t_ellip_req).toFixed(1);
+            document.getElementById('insightText').innerHTML = `<strong>Insight:</strong> For this specific geometry and pressure, a flat head requires roughly <strong>${multiplier}x</strong> more base thickness than a 2:1 formed head.`;
+        } else {
+            document.getElementById('insightText').innerHTML = "Awaiting valid inputs...";
+        }
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
