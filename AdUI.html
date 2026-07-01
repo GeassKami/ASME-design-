@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAS | Pressure Vessel Design Suite</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 0; }
+        
+        /* SAS Navigation */
+        .sas-nav { background: #0f172a; padding: 15px 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #3b82f6; color: white; }
+        .sas-nav-title { font-weight: bold; letter-spacing: 1px; }
+        .nav-btn { color: white; text-decoration: none; font-size: 0.9em; background: #334155; padding: 6px 12px; border-radius: 4px; margin-left: 10px; cursor: pointer; border: none; font-family: inherit;}
+        .print-btn { background: #2563eb; }
+        .print-btn:hover { background: #1d4ed8; }
+
+        .header { background-color: #1e293b; color: white; padding: 30px 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 1.8em; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .category { margin-bottom: 40px; }
+        .category-title { color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.3em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; color: inherit; transition: all 0.2s; display: block; border-left: 4px solid #334155; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-left-color: #3b82f6; }
+        .card h3 { margin: 0 0 8px 0; font-size: 1.1em; color: #0f172a; }
+        .card p { margin: 0; font-size: 0.85em; color: #64748b; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; font-weight: bold; margin-bottom: 8px; background: #e2e8f0; }
+        
+        footer { text-align: center; padding: 40px; color: #64748b; font-size: 0.85em; border-top: 1px solid #e2e8f0; margin-top: 50px; background: white;}
+
+        /* Clean PDF Printing Configuration */
+        @media print {
+            .nav-actions { display: none !important; } /* Hides buttons on PDF */
+            body { background: white; }
+            .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+            .container { margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+    
+    <nav class="sas-nav">
+        <div class="sas-nav-title">SAS DESIGN SUITE</div>
+        <div class="nav-actions">
+            <a href="index.html" class="nav-btn">Home</a>
+            <button onclick="window.print()" class="nav-btn print-btn">Print / Save as PDF</button>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>Suraj Anil Suryawanshi (SAS)</h1>
+        <p style="margin:5px 0 0 0; font-size: 0.85em; opacity: 0.8;">ASME Section VIII Div 1 Design & Validation Suite</p>
+    </div>
+
+    <div class="container">
+        
+        <div class="category">
+            <h3 class="category-title">Pressure Boundaries & Buckling</h3>
+            <div class="grid">
+                <a href="UG27.html" class="card"><span class="badge">UG-27</span><h3>Internal Shell Thickness</h3><p>Cylindrical and spherical shell calculations.</p></a>
+                <a href="UG32.html" class="card"><span class="badge">UG-32</span><h3>Internal Formed Heads</h3><p>Ellipsoidal, Torispherical, Hemispherical.</p></a>
+                <a href="UG28.html" class="card"><span class="badge">UG-28</span><h3>External Shell Buckling</h3><p>Iterative external pressure evaluation.</p></a>
+                <a href="UG33.html" class="card"><span class="badge">UG-33</span><h3>External Convex Heads</h3><p>Buckling analysis for formed heads.</p></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h3 class="category-title">Nozzle Reinforcement & Welding</h3>
+            <div class="grid">
+                <a href="UG37.html" class="card"><span class="badge">UG-37</span><h3>Basic Reinforcement</h3><p>Standard area replacement rule.</p></a>
+                <a href="UG37m.html" class="card"><span class="badge">UG-37</span><h3>Master Reinforcement</h3><p>Includes internal projections and stress ratios.</p></a>
+                <a href="UG37pad.html" class="card"><span class="badge">UG-37/40</span><h3>Pad Sizing Tool</h3><p>Calculates required Pad O.D. and limits.</p></a>
+                <a href="UG39.html" class="card"><span class="badge">UG-39</span><h3>Flat Head Reinforcement</h3><p>50% area replacement for flat covers.</p></a>
+                <a href="UW16JE.html" class="card"><span class="badge">UW-16</span><h3>Weld Sizing & Efficiency</h3><p>Joint efficiency and fillet weld leg sizes.</p></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h3 class="category-title">Flanges & Connections</h3>
+            <div class="grid">
+                <a href="Ap2FD.html" class="card"><span class="badge">APP-2</span><h3>Flange Moment Engine</h3><p>Operating and seating moment calculations.</p></a>
+                <a href="Ap2Bolt.html" class="card"><span class="badge">APP-2</span><h3>Bolt Sizing & Loads</h3><p>Area checks and over-bolting penalties.</p></a>
+            </div>
+        </div>
+
+        <div class="category">
+            <h3 class="category-title">Rating, Fracture & Stress</h3>
+            <div class="grid">
+                <a href="UG23.html" class="card"><span class="badge">UG-23</span><h3>Stress Compliance</h3><p>General membrane, local, and shear limits.</p></a>
+                <a href="UG34.html" class="card"><span class="badge">UG-34</span><h3>Unstayed Flat Heads</h3><p>Circular flat head bending thickness.</p></a>
+                <a href="UG9899.html" class="card"><span class="badge">UG-98/99</span><h3>MAWP & Shop Testing</h3><p>Limiting component MAWP and Test Pressures.</p></a>
+                <a href="UCS66.html" class="card"><span class="badge">UCS-66</span><h3>Brittle Fracture (MDMT)</h3><p>Exemption curves and temperature credits.</p></a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <strong>&copy; 2026 Suraj Anil Suryawanshi (SAS). All rights reserved.</strong><br>
+        <span style="font-size: 0.85em; opacity: 0.8;">Authorized Engineering Validation Suite</span>
+    </footer>
+
+</body>
+</html>
