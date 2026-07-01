@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-27 Shell Thickness Calculator | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 320px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #0056b3; }
+        .status-badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; }
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        .limit-alert { padding: 10px; border-radius: 6px; font-size: 0.85em; margin-top: 10px; font-weight: 5px; }
+        .alert-pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .thickness-val { font-size: 1.4em; font-weight: bold; color: #0056b3; margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-27 Shell Thickness Evaluation</h2>
+    
+    <div class="input-section">
+        <h3>Design Inputs</h3>
+        <div class="form-group"><label>Internal Design Pressure (P) [MPa]</label><input type="number" id="valP" value="2.5" step="0.1" oninput="calculate()"></div>
+        <div class="form-group"><label>Inside Radius (R) [mm]</label><input type="number" id="valR" value="600" oninput="calculate()"></div>
+        <div class="form-group"><label>Allowable Stress (S) [MPa]</label><input type="number" id="valS" value="138" oninput="calculate()"></div>
+        <div class="form-group"><label>Joint Efficiency (E) [0.70 - 1.00]</label><input type="number" id="valE" value="0.85" step="0.05" min="0.5" max="1" oninput="calculate()"></div>
+        <div class="form-group"><label>Corrosion Allowance (Ca) [mm]</label><input type="number" id="valCa" value="2.0" step="0.5" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        <h3>Calculated Nominal Thickness (t_req + Ca)</h3>
+        
+        <div class="result-card">
+            <div><strong>Cylinder - Circumferential [UG-27(c)(1)]</strong></div>
+            <div class="thickness-val" id="t_cyl_circ">-- mm</div>
+            <div style="font-size: 0.85em; color: #666;" id="limit_cyl_circ">Pressure Check: --</div>
+        </div>
+
+        <div class="result-card">
+            <div><strong>Cylinder - Longitudinal [UG-27(c)(2)]</strong></div>
+            <div class="thickness-val" id="t_cyl_long">-- mm</div>
+            <div style="font-size: 0.85em; color: #666;">Axial pressure load check</div>
+        </div>
+
+        <div class="result-card">
+            <div><strong>Spherical Shell [UG-27(d)]</strong></div>
+            <div class="thickness-val" id="t_sph">-- mm</div>
+            <div style="font-size: 0.85em; color: #666;" id="limit_sph">Pressure Check: --</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        const R = parseFloat(document.getElementById('valR').value) || 0;
+        const S = parseFloat(document.getElementById('valS').value) || 0;
+        const E = parseFloat(document.getElementById('valE').value) || 0;
+        const Ca = parseFloat(document.getElementById('valCa').value) || 0;
+
+        if (S <= 0 || E <= 0) return;
+
+        // 1. Cylinder Circumferential
+        const denom_cc = (S * E) - (0.6 * P);
+        let t_cc = denom_cc > 0 ? (P * R) / denom_cc : 0;
+        const p_lim_cc = 0.385 * S * E;
+        const cc_valid = P <= p_lim_cc && t_cc <= (0.5 * R);
+        
+        // 2. Cylinder Longitudinal
+        const denom_cl = (2 * S * E) + (0.4 * P);
+        let t_cl = (P * R) / denom_cl;
+
+        // 3. Spherical
+        const denom_sp = (2 * S * E) - (0.2 * P);
+        let t_sp = denom_sp > 0 ? (P * R) / denom_sp : 0;
+        const p_lim_sp = 0.665 * S * E;
+        const sp_valid = P <= p_lim_sp && t_sp <= (0.356 * R);
+
+        // Update displays with corrosion allowance added
+        document.getElementById('t_cyl_circ').innerText = t_cc > 0 ? `${(t_cc + Ca).toFixed(2)} mm` : "Invalid Math";
+        document.getElementById('t_cyl_long').innerText = `${(t_cl + Ca).toFixed(2)} mm`;
+        document.getElementById('t_sph').innerText = t_sp > 0 ? `${(t_sp + Ca).toFixed(2)} mm` : "Invalid Math";
+
+        // Update Validity Check Badges
+        document.getElementById('limit_cyl_circ').innerHTML = cc_valid 
+            ? `<span class="status-badge bg-pass">VALID THIN SHELL</span> P ≤ ${p_lim_cc.toFixed(1)} MPa`
+            : `<span class="status-badge bg-fail">EXCEEDS LIMIT</span> P > ${p_lim_cc.toFixed(1)} MPa (Thick Shell Required)`;
+
+        document.getElementById('limit_sph').innerHTML = sp_valid 
+            ? `<span class="status-badge bg-pass">VALID THIN SHELL</span> P ≤ ${p_lim_sp.toFixed(1)} MPa`
+            : `<span class="status-badge bg-fail">EXCEEDS LIMIT</span> P > ${p_lim_sp.toFixed(1)} MPa (Thick Shell Required)`;
+    }
+
+    // Run calculation initially
+    calculate();
+</script>
+</body>
+</html>
