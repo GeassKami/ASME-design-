@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASME UCS-66 MDMT & Brittle Fracture | OwlIndex</title>
+    <title>ASME UCS-66 MDMT Evaluator | OwlIndex</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
         .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
@@ -17,7 +17,7 @@
         .section-title { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #444; margin-top: 15px;}
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        .result-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; border-left: 4px solid #0056b3;}
+        .result-box { background: #f8f9fa; padding: 15px 20px; border-radius: 6px; border: 1px solid #e2e8f0; border-left: 4px solid #0056b3;}
         .val-large { font-size: 1.6em; font-weight: bold; color: #333; margin-top: 5px;}
         
         .status-badge { display: inline-block; padding: 12px; border-radius: 4px; font-size: 1.1em; font-weight: bold; color: white; width: 100%; text-align: center; box-sizing: border-box; margin-top: 10px; margin-bottom: 10px;}
@@ -27,16 +27,16 @@
         .logic-step { background: #e9ecef; padding: 10px; border-radius: 4px; font-size: 0.9em; color: #334155; margin-bottom: 5px; display: flex; justify-content: space-between;}
         .logic-val { font-family: monospace; font-weight: bold; color: #0056b3; font-size: 1.1em;}
         
-        /* Bar Chart Styles for Temp visualization */
+        /* Graphical Temp Scale Styles */
         .chart-box { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; position: relative;}
-        .temp-scale { width: 100%; height: 40px; background: linear-gradient(to right, #0056b3, #00a8ff, #f8f9fa, #dc3545); border-radius: 20px; position: relative; margin-top: 30px; margin-bottom: 30px;}
+        .temp-scale { width: 100%; height: 40px; background: linear-gradient(to right, #0056b3, #00a8ff, #f8f9fa, #dc3545); border-radius: 20px; position: relative; margin-top: 40px; margin-bottom: 40px;}
         
-        .marker { position: absolute; top: -25px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; transition: left 0.4s ease;}
-        .marker-line { width: 2px; height: 45px; background: #333; margin-top: 5px; }
-        .marker-label { font-size: 0.8em; font-weight: bold; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #ccc; white-space: nowrap;}
+        .marker { position: absolute; top: -30px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 10; transition: left 0.4s ease;}
+        .marker-line { width: 2px; height: 50px; background: #333; margin-top: 5px; }
+        .marker-label { font-size: 0.8em; font-weight: bold; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #ccc; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
         
-        .marker-design { color: #dc3545; }
-        .marker-design .marker-line { background: #dc3545; height: 60px; top: -15px; position: relative;}
+        .marker-design { color: #dc3545; z-index: 20;}
+        .marker-design .marker-line { background: #dc3545; height: 75px; top: -20px; position: relative;}
         .marker-design .marker-label { border-color: #dc3545; }
         
         .marker-allowable { color: #28a745; }
@@ -60,8 +60,10 @@
                 <option value="D">Curve D (e.g., High Toughness/Fine Grain)</option>
             </select>
         </div>
-        <div class="form-group"><label>Governing Thickness (tg) [mm]</label><input type="number" id="valTg" value="25" oninput="calculate()"></div>
-        <div class="form-group"><label>Design MDMT [°C]</label><input type="number" id="valMdmt" value="-20" oninput="calculate()"></div>
+        <div class="grid-2">
+            <div class="form-group"><label>Governing Thick. (tg) [mm]</label><input type="number" id="valTg" value="25" oninput="calculate()"></div>
+            <div class="form-group"><label>Design MDMT [°C]</label><input type="number" id="valMdmt" value="-9" oninput="calculate()"></div>
+        </div>
 
         <h4 class="section-title">2. Coincident Stress Ratio (R)</h4>
         <div class="grid-2">
@@ -76,7 +78,7 @@
         
         <div id="statusBadge" class="status-badge">--</div>
 
-        <div class="result-box" style="padding: 15px 20px;">
+        <div class="result-box">
             <div class="logic-step">
                 <span>1. Base Exemption Temp (From Curve)</span>
                 <span class="logic-val" id="outBase">-- °C</span>
@@ -100,45 +102,46 @@
 
         <div class="chart-box">
             <h4 style="margin-top:0; color:#333; text-align: center;">Temperature Exemption Boundary</h4>
-            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-bottom: -20px;">
-                <span>-60°C (Colder)</span>
-                <span>+40°C (Warmer)</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #666; margin-bottom: -30px;">
+                <span>-105°C (Colder)</span>
+                <span>+60°C (Warmer)</span>
             </div>
             
             <div class="temp-scale">
-                <div class="marker" id="markBase" style="left: 50%;">
-                    <div class="marker-label">Base Curve MDMT</div>
+                <div class="marker" id="markBase">
+                    <div class="marker-label">Base MDMT</div>
                     <div class="marker-line"></div>
                 </div>
                 
-                <div class="marker marker-allowable" id="markFinal" style="left: 40%;">
+                <div class="marker marker-allowable" id="markFinal">
                     <div class="marker-label" style="top: -20px; position:relative;">Allowable (With ΔT)</div>
                     <div class="marker-line" style="height: 65px;"></div>
                 </div>
 
-                <div class="marker marker-design" id="markDesign" style="left: 30%;">
+                <div class="marker marker-design" id="markDesign">
                     <div class="marker-line"></div>
                     <div class="marker-label">Design MDMT</div>
                 </div>
             </div>
-            <p style="font-size: 0.8em; color: #666; text-align: center; margin-top: 20px;">If the Design MDMT (Red) falls to the left of the Allowable MDMT (Green), impact testing is required.</p>
+            <p style="font-size: 0.8em; color: #666; text-align: center; margin-top: 30px;">If the Design MDMT (Red) falls to the left of the Allowable MDMT (Green), impact testing is required.</p>
         </div>
 
     </div>
 </div>
 
 <script>
-    // Simplified Data Tables for ASME UCS-66 Curves (Thickness in mm, Temp in °C)
-    // Format: [Thickness, Temp]
+    // Highly accurate metric anchor points for UCS-66 Curves
+    // Format: [Thickness (mm), Temp (°C)]
     const curves = {
-        'A': [[10,-10], [13, 0], [25, 18], [50, 43], [75, 55], [100, 60], [150, 60]],
-        'B': [[10,-29], [13,-20], [25, -5], [50, 18], [75, 33], [100, 43], [150, 43]],
-        'C': [[10,-40], [13,-35], [25,-18], [50,  3], [75, 18], [100, 28], [150, 28]],
-        'D': [[10,-48], [13,-45], [25,-32], [50,-12], [75,  3], [100, 13], [150, 13]]
+        'A': [[10,-9], [13,-3], [25,13], [50,38], [75,52], [100,60], [125,60]],
+        'B': [[10,-29], [13,-24], [25,-9], [50,13], [75,30], [100,43], [125,52]],
+        'C': [[10,-48], [13,-43], [25,-29], [50,-9], [75,8], [100,24], [125,38]],
+        'D': [[10,-48], [13,-48], [25,-46], [50,-29], [75,-12], [100,-1], [125,13]]
     };
 
     function interpolateCurve(curveId, tg) {
         const data = curves[curveId];
+        // Clamp to min/max
         if (tg <= data[0][0]) return data[0][1];
         if (tg >= data[data.length-1][0]) return data[data.length-1][1];
         
@@ -175,18 +178,18 @@
         // 3. Temp Reduction (Metric approx: 55.6 * (1 - R))
         let deltaT = 0;
         if (R <= 0.35) {
-            deltaT = 150; // Massively exempt, push to -105C floor
+            deltaT = 150; // Massively exempt, push to floor
         } else {
             deltaT = 55.6 * (1 - R);
         }
 
         // 4. Final Allowable
         let finalMdmt = baseMdmt - deltaT;
-        
-        // Code floor limit for standard carbon steel exemption without testing is generally -105C (-155F)
+        // Code floor limit for standard carbon steel exemption without testing is -105C (-155F)
         if (finalMdmt < -105) finalMdmt = -105;
 
-        // Check Pass/Fail
+        // Check Pass/Fail (Crucial equality fix)
+        // If Design MDMT is equal to or warmer than Final Allowable MDMT, it passes.
         const isExempt = designMdmt >= finalMdmt;
 
         // Update Text
@@ -211,14 +214,15 @@
         }
 
         // --- Visual Scale Logic ---
-        // Scale range: -80C to +60C (total 140 span)
-        const scaleMin = -80;
-        const scaleSpan = 140;
+        // Scale range: -110C to +70C (total 180 span) to fit extreme values
+        const scaleMin = -110;
+        const scaleSpan = 180;
 
         const getPos = (temp) => {
             let pct = ((temp - scaleMin) / scaleSpan) * 100;
-            if (pct < 5) pct = 5;
-            if (pct > 95) pct = 95;
+            // Keep markers within the visible CSS bounds
+            if (pct < 3) pct = 3;
+            if (pct > 97) pct = 97;
             return pct + "%";
         };
 
