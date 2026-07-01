@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME App 2 Master Flange & Bolting | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section { flex: 1; min-width: 350px; }
+        .output-section { flex: 1.5; min-width: 450px; display: flex; flex-direction: column; gap: 20px;}
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        .section-title { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #444; margin-top: 15px;}
+        .note { font-size: 0.85em; color: #666; font-style: italic; margin-bottom: 15px; display: block; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        
+        .result-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; border-left: 4px solid #0056b3;}
+        .val-large { font-size: 1.4em; font-weight: bold; color: #0056b3; margin-top: 5px;}
+        
+        .status-badge { display: inline-block; padding: 10px 12px; border-radius: 4px; font-size: 1em; font-weight: bold; color: white; width: 100%; text-align: center; box-sizing: border-box; }
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        
+        /* Bar Chart Styles */
+        .chart-box { background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 10px;}
+        .bar-wrap { margin-bottom: 15px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 25px; overflow: hidden; display: flex; }
+        .bar-fill { height: 100%; transition: width 0.4s ease; background-color: #0056b3;}
+        .fill-req { background-color: #6c757d; }
+        .fill-act { background-color: #28a745; }
+        .fill-fail { background-color: #dc3545; }
+        .fill-penalty { background-color: #ffc107; }
+        
+        .penalty-text { font-size: 0.9em; padding: 10px; background: #fff3cd; border-left: 4px solid #ffeeba; color: #856404; margin-top: 10px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 App 2: Bolt Sizing & Flange Loads</h2>
+    
+    <div class="input-section">
+        <h4 class="section-title" style="margin-top:0;">1. Gasket & Geometry</h4>
+        <div class="form-group"><label>Design Pressure (P) [MPa]</label><input type="number" id="valP" value="2.5" step="0.1" oninput="calculate()"></div>
+        <div class="grid-2">
+            <div class="form-group"><label>Inside Dia (B) [mm]</label><input type="number" id="valB" value="1000" oninput="calculate()"></div>
+            <div class="form-group"><label>Gasket Reaction (G) [mm]</label><input type="number" id="valG" value="1080" oninput="calculate()"></div>
+            <div class="form-group"><label>Bolt Circle Dia (C) [mm]</label><input type="number" id="valC" value="1180" oninput="calculate()"></div>
+            <div class="form-group"><label>Effective Gasket Width (b) [mm]</label><input type="number" id="valWb" value="12" oninput="calculate()"></div>
+            <div class="form-group"><label>Gasket Factor (m)</label><input type="number" id="valM" value="3.0" step="0.1" oninput="calculate()"></div>
+            <div class="form-group"><label>Seating Stress (y) [MPa]</label><input type="number" id="valY" value="69" oninput="calculate()"></div>
+        </div>
+
+        <h4 class="section-title">2. Bolting Configuration</h4>
+        <div class="grid-2">
+            <div class="form-group"><label>Allowable Stress Oper. (Sb) [MPa]</label><input type="number" id="valSb" value="138" oninput="calculate()"></div>
+            <div class="form-group"><label>Allowable Stress Amb. (Sa) [MPa]</label><input type="number" id="valSa" value="138" oninput="calculate()"></div>
+        </div>
+        <div class="grid-3">
+            <div class="form-group"><label>Number of Bolts (n)</label><input type="number" id="valN" value="36" step="4" oninput="calculate()"></div>
+            <div class="form-group"><label>Nominal Dia (db) [mm]</label><input type="number" id="valDb" value="24" oninput="calculate()"></div>
+            <div class="form-group"><label>Thread Pitch (Pt) [mm]</label><input type="number" id="valPt" value="3" oninput="calculate()"></div>
+        </div>
+    </div>
+
+    <div class="output-section">
+        
+        <div class="grid-2">
+            <div class="result-box">
+                <div style="font-size: 0.85em; color: #555;">Required Operating Load (Wm1)</div>
+                <div class="val-large" id="outWm1">--</div>
+            </div>
+            <div class="result-box">
+                <div style="font-size: 0.85em; color: #555;">Required Seating Load (Wm2)</div>
+                <div class="val-large" id="outWm2">--</div>
+            </div>
+        </div>
+
+        <h4 class="section-title">Bolt Area Check (Am vs Ab)</h4>
+        <div class="grid-3">
+            <div class="result-box" style="padding: 10px; border-left: 2px solid #ccc;">
+                <div style="font-size: 0.8em; color: #555;">Req. Area Oper. (Am1)</div>
+                <div style="font-size: 1.1em; font-weight: bold;" id="outAm1">--</div>
+            </div>
+            <div class="result-box" style="padding: 10px; border-left: 2px solid #ccc;">
+                <div style="font-size: 0.8em; color: #555;">Req. Area Seat (Am2)</div>
+                <div style="font-size: 1.1em; font-weight: bold;" id="outAm2">--</div>
+            </div>
+            <div class="result-box" style="padding: 10px; border-left: 4px solid #0056b3;">
+                <div style="font-size: 0.8em; color: #555;">Governing Req. Area (Am)</div>
+                <div style="font-size: 1.2em; font-weight: bold; color: #0056b3;" id="outAm">--</div>
+            </div>
+        </div>
+
+        <div id="statusBadge" class="status-badge" style="margin-top: 5px;">--</div>
+
+        <div class="chart-box">
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Required Area (Am)</span> <span id="lblAm">-- mm²</span></div>
+                <div class="bar-bg"><div id="barAm" class="bar-fill fill-req" style="width: 100%;"></div></div>
+            </div>
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Actual Provided Area (Ab)</span> <span id="lblAb">-- mm²</span></div>
+                <div class="bar-bg"><div id="barAb" class="bar-fill fill-act" style="width: 0%;"></div></div>
+            </div>
+        </div>
+
+        <h4 class="section-title">Final Flange Design Loads (W)</h4>
+        <p class="note">These values are used to calculate the twisting moments (Mo) applied to the flange hub.</p>
+        
+        <div class="grid-2">
+            <div class="result-box">
+                <div style="font-size: 0.85em; color: #555;">Operating Design Load (W_op)</div>
+                <div class="val-large" id="outWop">--</div>
+                <div style="font-size: 0.8em; color: #666; margin-top: 5px;">(Equal to Wm1)</div>
+            </div>
+            <div class="result-box" style="border-left-color: #ffc107;">
+                <div style="font-size: 0.85em; color: #555;">Seating Design Load (W_seat)</div>
+                <div class="val-large" id="outWseat" style="color: #d39e00;">--</div>
+                <div style="font-size: 0.8em; color: #666; margin-top: 5px;">Based on Average Area: (Am + Ab)/2 * Sa</div>
+            </div>
+        </div>
+        
+        <div class="penalty-text" id="penaltyMsg">--</div>
+
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Inputs
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        const B = parseFloat(document.getElementById('valB').value) || 0;
+        const G = parseFloat(document.getElementById('valG').value) || 0;
+        const b = parseFloat(document.getElementById('valWb').value) || 0;
+        const m = parseFloat(document.getElementById('valM').value) || 0;
+        const y = parseFloat(document.getElementById('valY').value) || 0;
+        
+        const Sb = parseFloat(document.getElementById('valSb').value) || 0;
+        const Sa = parseFloat(document.getElementById('valSa').value) || 0;
+        const n = parseFloat(document.getElementById('valN').value) || 0;
+        const db = parseFloat(document.getElementById('valDb').value) || 0;
+        const Pt = parseFloat(document.getElementById('valPt').value) || 0;
+
+        if (B <= 0 || G <= 0 || Sb <= 0 || Sa <= 0 || n <= 0 || db <= 0) return;
+
+        // Formats
+        const fmtN = (num) => num.toLocaleString(undefined, {maximumFractionDigits: 0}) + " N";
+        const fmtA = (num) => num.toLocaleString(undefined, {maximumFractionDigits: 1}) + " mm²";
+
+        // 1. Forces
+        const Hd = (Math.PI / 4) * Math.pow(B, 2) * P;
+        const Ht = (Math.PI / 4) * (Math.pow(G, 2) - Math.pow(B, 2)) * P;
+        const Hp = 2 * Math.PI * b * G * m * P;
+        
+        const Wm1 = Hd + Ht + Hp;
+        const Wm2 = Math.PI * b * G * y;
+
+        document.getElementById('outWm1').innerText = fmtN(Wm1);
+        document.getElementById('outWm2').innerText = fmtN(Wm2);
+
+        // 2. Required Areas
+        const Am1 = Wm1 / Sb;
+        const Am2 = Wm2 / Sa;
+        const Am = Math.max(Am1, Am2);
+
+        document.getElementById('outAm1').innerText = fmtA(Am1);
+        document.getElementById('outAm2').innerText = fmtA(Am2);
+        document.getElementById('outAm').innerText = fmtA(Am);
+
+        // 3. Actual Area
+        const ar = (Math.PI / 4) * Math.pow(db - 0.9382 * Pt, 2);
+        const Ab = n * ar;
+
+        const isPass = Ab >= Am;
+        const badge = document.getElementById('statusBadge');
+        const barAb = document.getElementById('barAb');
+
+        if (isPass) {
+            badge.className = "status-badge bg-pass";
+            badge.innerText = `PASS: Actual Area (${fmtA(Ab)}) is sufficient.`;
+            barAb.className = "bar-fill fill-act";
+        } else {
+            badge.className = "status-badge bg-fail";
+            badge.innerText = `FAIL: Insufficient Bolt Area (${fmtA(Ab)}). Increase quantity or size.`;
+            barAb.className = "bar-fill fill-fail";
+        }
+
+        // Bar Charts
+        const maxScaleA = Math.max(Am, Ab) * 1.1;
+        document.getElementById('lblAm').innerText = fmtA(Am);
+        document.getElementById('lblAb').innerText = fmtA(Ab);
+        
+        if (maxScaleA > 0) {
+            document.getElementById('barAm').style.width = `${(Am / maxScaleA) * 100}%`;
+            document.getElementById('barAb').style.width = `${(Ab / maxScaleA) * 100}%`;
+        }
+
+        // 4. Design Loads
+        const Wop = Wm1;
+        let Wseat = 0;
+        
+        if (isPass) {
+            Wseat = ((Am + Ab) / 2) * Sa;
+        } else {
+            Wseat = Ab * Sa; // Fallback if failing to show scale
+        }
+
+        document.getElementById('outWop').innerText = fmtN(Wop);
+        document.getElementById('outWseat').innerText = fmtN(Wseat);
+
+        // Over-bolting insight
+        const penaltyMsg = document.getElementById('penaltyMsg');
+        if (isPass) {
+            const ratio = (Wseat / Wm2).toFixed(2);
+            if (ratio > 1.5) {
+                penaltyMsg.style.display = "block";
+                penaltyMsg.innerText = `⚠️ OVER-BOLTING PENALTY: Your actual bolt area is much larger than required. The Code forces your Seating Design Load (W_seat) to be ${ratio}x higher than the theoretical minimum (Wm2). This will drastically increase your flange bending moment.`;
+            } else {
+                penaltyMsg.style.display = "block";
+                penaltyMsg.innerText = `Optimal Bolting: W_seat is ${(ratio)}x of Wm2. Your bolt sizing is efficient.`;
+                penaltyMsg.style.borderColor = "#c3e6cb";
+                penaltyMsg.style.background = "#d4edda";
+                penaltyMsg.style.color = "#155724";
+            }
+        } else {
+            penaltyMsg.style.display = "none";
+        }
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
