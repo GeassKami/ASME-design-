@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME App 2 Flange Interaction | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section { flex: 1; min-width: 350px; }
+        .output-section { flex: 1.5; min-width: 450px; display: flex; flex-direction: column; gap: 20px;}
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        .section-title { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #444; margin-top: 15px;}
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .result-box { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; border-left: 4px solid #0056b3;}
+        .val-large { font-size: 1.5em; font-weight: bold; color: #0056b3; margin-top: 5px;}
+        
+        /* Flange Schematic CSS */
+        .diagram-container { background: #e9ecef; border-radius: 8px; padding: 20px; position: relative; height: 250px; border: 1px solid #ccc; overflow: hidden; display: flex; align-items: flex-end; justify-content: flex-start;}
+        .vessel-wall { width: 40px; height: 150px; background: #6c757d; border-right: 2px solid #333; position: relative; }
+        .flange-ring { height: 60px; background: #adb5bd; border: 2px solid #333; border-left: none; position: relative; border-radius: 0 5px 5px 0;}
+        .gasket { width: 20px; height: 15px; background: #ffc107; position: absolute; bottom: -15px; border: 1px solid #333; z-index: 10;}
+        .bolt-line { width: 2px; height: 200px; border-left: 2px dashed #dc3545; position: absolute; bottom: -20px; }
+        
+        .vector { position: absolute; font-weight: bold; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; }
+        .arrow-up::before { content: '↑'; font-size: 1.5em; color: #dc3545; }
+        .arrow-down::before { content: '↓'; font-size: 1.5em; color: #0056b3; }
+        
+        .lever-arm { position: absolute; border-bottom: 1px solid #333; height: 10px; border-left: 1px solid #333; border-right: 1px solid #333; text-align: center; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 App 2: Flange Moment Engine</h2>
+    
+    <div class="input-section">
+        <div class="form-group"><label>Design Pressure (P) [MPa]</label><input type="number" id="valP" value="2.5" step="0.1" oninput="calculate()"></div>
+        
+        <h4 class="section-title">Diameters (mm)</h4>
+        <div class="grid-2">
+            <div class="form-group"><label>Inside Dia (B)</label><input type="number" id="valB" value="1000" oninput="calculate()"></div>
+            <div class="form-group"><label>Gasket Reaction Dia (G)</label><input type="number" id="valG" value="1080" oninput="calculate()"></div>
+            <div class="form-group"><label>Bolt Circle Dia (C)</label><input type="number" id="valC" value="1180" oninput="calculate()"></div>
+            <div class="form-group"><label>Flange Outside Dia (A)</label><input type="number" id="valA" value="1300" oninput="calculate()"></div>
+        </div>
+
+        <h4 class="section-title">Gasket Parameters</h4>
+        <div class="grid-2">
+            <div class="form-group"><label>Effective Width (b) [mm]</label><input type="number" id="valWb" value="12" oninput="calculate()"></div>
+            <div class="form-group"><label>Factor (m)</label><input type="number" id="valM" value="3.0" step="0.1" oninput="calculate()"></div>
+            <div class="form-group"><label>Seating Stress (y) [MPa]</label><input type="number" id="valY" value="69" oninput="calculate()"></div>
+        </div>
+    </div>
+
+    <div class="output-section">
+        
+        <div class="diagram-container" id="diagram">
+            <div class="vessel-wall">
+                <div class="vector arrow-down" style="left: 10px; bottom: 160px; color: #0056b3;">Hd</div>
+            </div>
+            <div class="flange-ring" id="flangeRing">
+                <div class="gasket" id="gasketBlock">
+                    <div class="vector arrow-down" style="left: 0px; bottom: 25px; color: #0056b3;">Hp</div>
+                </div>
+                <div class="bolt-line" id="boltLine">
+                    <div class="vector arrow-up" style="left: -15px; top: -35px; color: #dc3545;">Wm1</div>
+                </div>
+                
+                <div class="lever-arm" id="armHd" style="bottom: 70px;">hD</div>
+                <div class="lever-arm" id="armHg" style="bottom: 90px;">hG</div>
+            </div>
+        </div>
+
+        <h4 class="section-title" style="margin-top:0;">Required Bolt Loads (Newtons)</h4>
+        <div class="grid-2">
+            <div class="result-box">
+                <div style="font-size: 0.85em; color: #555;">Operating Load (Wm1)</div>
+                <div class="val-large" id="outWm1">--</div>
+            </div>
+            <div class="result-box" style="border-left-color: #ffc107;">
+                <div style="font-size: 0.85em; color: #555;">Seating Load (Wm2)</div>
+                <div class="val-large" id="outWm2" style="color: #d39e00;">--</div>
+            </div>
+        </div>
+
+        <h4 class="section-title">Operating Flange Moments (N-mm)</h4>
+        <div class="grid-2">
+            <div class="result-box" style="border-left-color: #6c757d; padding: 10px;">
+                <div style="font-size: 0.85em;">End Force Mom. (Md) = <span id="outMd">--</span></div>
+                <div style="font-size: 0.85em;">Gasket Mom. (Mg) = <span id="outMg">--</span></div>
+                <div style="font-size: 0.85em;">Face Mom. (Mt) = <span id="outMt">--</span></div>
+            </div>
+            <div class="result-box" style="border-left-color: #dc3545;">
+                <div style="font-size: 0.85em; color: #dc3545; font-weight:bold;">Total Operating Moment (Mo)</div>
+                <div class="val-large" id="outMo" style="color: #dc3545;">--</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        const B = parseFloat(document.getElementById('valB').value) || 0;
+        const G = parseFloat(document.getElementById('valG').value) || 0;
+        const C = parseFloat(document.getElementById('valC').value) || 0;
+        const A = parseFloat(document.getElementById('valA').value) || 0;
+        const b = parseFloat(document.getElementById('valWb').value) || 0;
+        const m = parseFloat(document.getElementById('valM').value) || 0;
+        const y = parseFloat(document.getElementById('valY').value) || 0;
+
+        if (B <= 0 || G <= B || C <= G || A <= C) return;
+
+        // Forces
+        const Hd = (Math.PI / 4) * Math.pow(B, 2) * P;
+        const Ht = (Math.PI / 4) * (Math.pow(G, 2) - Math.pow(B, 2)) * P;
+        const Hp = 2 * Math.PI * b * G * m * P;
+        
+        const Wm1 = Hd + Ht + Hp;
+        const Wm2 = Math.PI * b * G * y;
+
+        // Lever Arms
+        const hd = (C - B) / 2;
+        const hg = (C - G) / 2;
+        const ht = (hd + hg) / 2;
+
+        // Moments
+        const Md = Hd * hd;
+        const Mg = Hp * hg;
+        const Mt = Ht * ht;
+        const Mo = Md + Mg + Mt;
+
+        // Formats
+        const fmt = (num) => num.toLocaleString(undefined, {maximumFractionDigits: 0});
+
+        document.getElementById('outWm1').innerText = fmt(Wm1) + " N";
+        document.getElementById('outWm2').innerText = fmt(Wm2) + " N";
+        
+        document.getElementById('outMd').innerText = fmt(Md);
+        document.getElementById('outMg').innerText = fmt(Mg);
+        document.getElementById('outMt').innerText = fmt(Mt);
+        document.getElementById('outMo').innerText = fmt(Mo);
+
+        // Update Diagram Proportions (Scale to max width of 350px for flange ring)
+        const scale = 350 / ((A - B)/2);
+        
+        const ringWidth = ((A - B)/2) * scale;
+        const gasketOffset = ((G - B)/2) * scale;
+        const boltOffset = ((C - B)/2) * scale;
+
+        document.getElementById('flangeRing').style.width = ringWidth + "px";
+        
+        const gasketBlock = document.getElementById('gasketBlock');
+        gasketBlock.style.left = (gasketOffset - 10) + "px"; // center 20px block
+
+        const boltLine = document.getElementById('boltLine');
+        boltLine.style.left = boltOffset + "px";
+
+        // Update visual lever arms
+        const armHd = document.getElementById('armHd');
+        armHd.style.left = "0px";
+        armHd.style.width = boltOffset + "px";
+
+        const armHg = document.getElementById('armHg');
+        armHg.style.left = gasketOffset + "px";
+        armHg.style.width = (boltOffset - gasketOffset) + "px";
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
