@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-32 Formed Heads Calculator | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 320px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #0056b3; display: flex; justify-content: space-between; align-items: center; }
+        .result-details { flex: 1; }
+        .thickness-val { font-size: 1.5em; font-weight: bold; color: #0056b3; }
+        .code-ref { font-size: 0.8em; color: #666; background: #e9ecef; padding: 2px 6px; border-radius: 3px; }
+        .bar-container { width: 100px; height: 15px; background: #e9ecef; border-radius: 3px; overflow: hidden; margin-left: 15px; }
+        .bar-fill { height: 100%; background: #28a745; transition: width 0.3s ease; }
+        .warning { color: #dc3545; font-size: 0.85em; font-weight: bold; display: none; margin-top: -10px; margin-bottom: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-32 Formed Heads (Internal Pressure)</h2>
+    
+    <div class="input-section">
+        <h3>Geometry & Design Inputs</h3>
+        <div class="form-group"><label>Internal Design Pressure (P) [MPa]</label><input type="number" id="valP" value="3.0" step="0.1" oninput="calculate()"></div>
+        <div class="form-group"><label>Inside Skirt Diameter (D) [mm]</label><input type="number" id="valD" value="1500" oninput="syncL(); calculate();"></div>
+        <div class="form-group"><label>Inside Crown Radius (L) [mm]</label><input type="number" id="valL" value="1500" oninput="calculate()">
+            <small style="color:#666;">*Typically equals D for standard torispherical heads.</small>
+        </div>
+        <div class="form-group"><label>Half-Apex Angle for Cone (&alpha;) [Degrees]</label><input type="number" id="valAlpha" value="30" max="30" oninput="calculate()"></div>
+        <div id="alphaWarning" class="warning">⚠️ Angle must be ≤ 30° for UG-32(g). Use Appendix 1-5 for larger angles.</div>
+        
+        <h3>Material Parameters</h3>
+        <div class="form-group"><label>Allowable Stress (S) [MPa]</label><input type="number" id="valS" value="138" oninput="calculate()"></div>
+        <div class="form-group"><label>Joint Efficiency (E) [0.70 - 1.00]</label><input type="number" id="valE" value="1.0" step="0.05" max="1" min="0.5" oninput="calculate()"></div>
+        <div class="form-group"><label>Corrosion Allowance (Ca) [mm]</label><input type="number" id="valCa" value="3.0" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        <h3>Required Nominal Thickness Comparison</h3>
+        <p style="font-size: 0.9em; color: #555;">Shows required thickness + corrosion allowance. Visually compare material efficiency.</p>
+        
+        <div class="result-card">
+            <div class="result-details">
+                <div><strong>Hemispherical</strong> <span class="code-ref">UG-32(f)</span></div>
+                <div style="font-size: 0.85em; color: #666;">Radius (R) = D / 2</div>
+            </div>
+            <div class="thickness-val" id="t_hemi">-- mm</div>
+            <div class="bar-container"><div id="bar_hemi" class="bar-fill"></div></div>
+        </div>
+
+        <div class="result-card">
+            <div class="result-details">
+                <div><strong>2:1 Ellipsoidal</strong> <span class="code-ref">UG-32(c)</span></div>
+                <div style="font-size: 0.85em; color: #666;">Industry Standard</div>
+            </div>
+            <div class="thickness-val" id="t_ellip">-- mm</div>
+            <div class="bar-container"><div id="bar_ellip" class="bar-fill" style="background:#17a2b8;"></div></div>
+        </div>
+
+        <div class="result-card">
+            <div class="result-details">
+                <div><strong>Torispherical (F&D)</strong> <span class="code-ref">UG-32(e)</span></div>
+                <div style="font-size: 0.85em; color: #666;">Crown Radius (L) = <span id="lbl_L">1500</span> mm</div>
+            </div>
+            <div class="thickness-val" id="t_tori">-- mm</div>
+            <div class="bar-container"><div id="bar_tori" class="bar-fill" style="background:#ffc107;"></div></div>
+        </div>
+
+        <div class="result-card">
+            <div class="result-details">
+                <div><strong>Conical</strong> <span class="code-ref">UG-32(g)</span></div>
+                <div style="font-size: 0.85em; color: #666;">No Transition Knuckle</div>
+            </div>
+            <div class="thickness-val" id="t_cone">-- mm</div>
+            <div class="bar-container"><div id="bar_cone" class="bar-fill" style="background:#dc3545;"></div></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function syncL() {
+        // Automatically sync L to D for standard usage, but allow override
+        document.getElementById('valL').value = document.getElementById('valD').value;
+    }
+
+    function calculate() {
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        const D = parseFloat(document.getElementById('valD').value) || 0;
+        const L = parseFloat(document.getElementById('valL').value) || 0;
+        const AlphaDeg = parseFloat(document.getElementById('valAlpha').value) || 0;
+        const S = parseFloat(document.getElementById('valS').value) || 0;
+        const E = parseFloat(document.getElementById('valE').value) || 0;
+        const Ca = parseFloat(document.getElementById('valCa').value) || 0;
+
+        document.getElementById('lbl_L').innerText = L;
+
+        // Angle validation
+        if (AlphaDeg > 30) {
+            document.getElementById('alphaWarning').style.display = "block";
+        } else {
+            document.getElementById('alphaWarning').style.display = "none";
+        }
+
+        if (S <= 0 || E <= 0 || D <= 0) return;
+
+        // 1. Hemispherical (R = D/2)
+        const denom_hemi = (2 * S * E) - (0.2 * P);
+        const t_hemi = denom_hemi > 0 ? ((P * (D / 2)) / denom_hemi) + Ca : 0;
+
+        // 2. 2:1 Ellipsoidal
+        const denom_ellip = (2 * S * E) - (0.2 * P);
+        const t_ellip = denom_ellip > 0 ? ((P * D) / denom_ellip) + Ca : 0;
+
+        // 3. Torispherical
+        const denom_tori = (S * E) - (0.1 * P);
+        const t_tori = denom_tori > 0 ? ((0.885 * P * L) / denom_tori) + Ca : 0;
+
+        // 4. Conical (Convert deg to rad)
+        const alphaRad = AlphaDeg * (Math.PI / 180);
+        const denom_cone = 2 * Math.cos(alphaRad) * ((S * E) - (0.6 * P));
+        const t_cone = denom_cone > 0 ? ((P * D) / denom_cone) + Ca : 0;
+
+        // Update Text
+        document.getElementById('t_hemi').innerText = t_hemi > 0 ? t_hemi.toFixed(2) + " mm" : "N/A";
+        document.getElementById('t_ellip').innerText = t_ellip > 0 ? t_ellip.toFixed(2) + " mm" : "N/A";
+        document.getElementById('t_tori').innerText = t_tori > 0 ? t_tori.toFixed(2) + " mm" : "N/A";
+        document.getElementById('t_cone').innerText = t_cone > 0 ? t_cone.toFixed(2) + " mm" : "N/A";
+
+        // Update Bars (Scale based on the largest value)
+        const maxT = Math.max(t_hemi, t_ellip, t_tori, t_cone);
+        
+        document.getElementById('bar_hemi').style.width = maxT > 0 ? `${(t_hemi / maxT) * 100}%` : "0%";
+        document.getElementById('bar_ellip').style.width = maxT > 0 ? `${(t_ellip / maxT) * 100}%` : "0%";
+        document.getElementById('bar_tori').style.width = maxT > 0 ? `${(t_tori / maxT) * 100}%` : "0%";
+        document.getElementById('bar_cone').style.width = maxT > 0 ? `${(t_cone / maxT) * 100}%` : "0%";
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
