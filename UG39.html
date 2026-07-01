@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-39 Flat Head Nozzle Reinforcement | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 350px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .note { font-size: 0.85em; color: #666; font-style: italic; margin-bottom: 15px; display: block; }
+        
+        .section-title { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #444; margin-top: 25px;}
+        
+        .area-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .area-box { background: #e9ecef; padding: 12px; border-radius: 6px; text-align: center; border: 1px solid #ddd;}
+        .area-val { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 5px;}
+        
+        .status-badge { display: inline-block; padding: 10px 12px; border-radius: 4px; font-size: 1em; font-weight: bold; color: white; width: 100%; text-align: center; box-sizing: border-box; margin-top: 10px; margin-bottom: 10px;}
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        
+        /* Bar Chart Styles */
+        .chart-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;}
+        .bar-wrap { margin-bottom: 15px; position: relative;}
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 35px; overflow: hidden; display: flex; position: relative;}
+        .bar-fill { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8em; font-weight: bold; overflow: hidden; white-space: nowrap; }
+        
+        .fill-req { background-color: #dc3545; } 
+        .fill-a1 { background-color: #0056b3; } 
+        .fill-a2 { background-color: #17a2b8; } 
+        
+        .fr-box { background: #d4edda; padding: 10px; border-radius: 4px; border: 1px solid #c3e6cb; color: #155724; font-size: 0.9em; margin-bottom: 15px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-39: Flat Head Reinforcement</h2>
+    
+    <div class="input-section">
+        <p class="note">Evaluates reinforcement for single openings in unstayed flat heads (d &le; 0.5D). Applies the UG-39(b)(1) 50% area rule.</p>
+        
+        <div class="form-group"><label>Finished Opening Diameter (d) [mm]</label><input type="number" id="valD" value="150" oninput="calculate()"></div>
+        
+        <h4 class="section-title">Flat Head Parameters</h4>
+        <div class="form-group"><label>Required Head Thickness (tr) [mm]</label><input type="number" id="valTr" value="25" oninput="calculate()">
+            <span class="note">From UG-34 calculations.</span>
+        </div>
+        <div class="form-group"><label>Actual Head Thickness (t) [mm]</label><input type="number" id="valT" value="30" oninput="calculate()"></div>
+        <div class="form-group"><label>Head Allowable Stress (Ss) [MPa]</label><input type="number" id="valSs" value="138" oninput="calculate()"></div>
+        
+        <h4 class="section-title">Nozzle Parameters</h4>
+        <div class="form-group"><label>Required Nozzle Thickness (trn) [mm]</label><input type="number" id="valTrn" value="3" oninput="calculate()"></div>
+        <div class="form-group"><label>Actual Nozzle Thickness (tn) [mm]</label><input type="number" id="valTn" value="6" oninput="calculate()"></div>
+        <div class="form-group"><label>Nozzle Allowable Stress (Sn) [MPa]</label><input type="number" id="valSn" value="138" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        
+        <div class="fr-box">
+            <strong>Rule Applied:</strong> A = 0.5 &times; d &times; tr (UG-39(b)(1))
+        </div>
+
+        <div class="area-grid">
+            <div class="area-box" style="border-top: 4px solid #dc3545;">
+                <div style="font-size: 0.85em; color: #555;">Required Area (A)</div>
+                <div class="area-val" id="outA">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #28a745;">
+                <div style="font-size: 0.85em; color: #555;">Total Available (A1+A2)</div>
+                <div class="area-val" id="outAvail">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #0056b3;">
+                <div style="font-size: 0.85em; color: #555;">Head Excess (A1)</div>
+                <div class="area-val" id="outA1">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #17a2b8;">
+                <div style="font-size: 0.85em; color: #555;">Nozzle Excess (A2)</div>
+                <div class="area-val" id="outA2">--</div>
+            </div>
+        </div>
+
+        <div id="statusBadge" class="status-badge">--</div>
+
+        <div class="chart-box">
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Required Area (A)</span></div>
+                <div class="bar-bg"><div id="barReq" class="bar-fill fill-req" style="width: 100%;">A</div></div>
+            </div>
+            
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Available Area Stack</span></div>
+                <div class="bar-bg" id="barStackContainer">
+                    <div id="barA1" class="bar-fill fill-a1" style="width: 0%;" title="Head Area A1">A1</div>
+                    <div id="barA2" class="bar-fill fill-a2" style="width: 0%;" title="Nozzle Area A2">A2</div>
+                </div>
+            </div>
+            
+            <p id="insightText" style="font-size: 0.85em; color: #666; margin-top: 15px;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const d = parseFloat(document.getElementById('valD').value) || 0;
+        const tr = parseFloat(document.getElementById('valTr').value) || 0;
+        const t = parseFloat(document.getElementById('valT').value) || 0;
+        const Ss = parseFloat(document.getElementById('valSs').value) || 0;
+        const trn = parseFloat(document.getElementById('valTrn').value) || 0;
+        const tn = parseFloat(document.getElementById('valTn').value) || 0;
+        const Sn = parseFloat(document.getElementById('valSn').value) || 0;
+
+        if (d <= 0 || tr <= 0 || t <= 0 || Ss <= 0 || Sn <= 0) return;
+
+        // Calculate Stress Ratio
+        const fr = Math.min(1.0, Sn / Ss);
+
+        // 1. Required Area A (The 0.5 multiplier is the core of UG-39)
+        const A = 0.5 * d * tr;
+
+        // 2. Head Area A1
+        let A1 = 0;
+        if (t > tr) {
+            const limitX = Math.max(d, 2 * (t + tn));
+            A1 = limitX * (t - tr);
+        }
+
+        // 3. Nozzle Area A2
+        let A2 = 0;
+        if (tn > trn) {
+            const limitY = Math.min(2.5 * t, 2.5 * tn);
+            A2 = 2 * limitY * (tn - trn) * fr;
+        }
+
+        const A_avail = A1 + A2;
+        const deficit = Math.max(0, A - A_avail);
+
+        // Update Text
+        document.getElementById('outA').innerText = A.toFixed(1);
+        document.getElementById('outAvail').innerText = A_avail.toFixed(1);
+        document.getElementById('outA1').innerText = A1.toFixed(1);
+        document.getElementById('outA2').innerText = A2.toFixed(1);
+
+        const badge = document.getElementById('statusBadge');
+        const insight = document.getElementById('insightText');
+
+        if (deficit <= 0) {
+            badge.className = "status-badge bg-pass";
+            badge.innerText = "PASS: Inherently Reinforced";
+            insight.innerText = `Because the flat head is thick, A1 alone provides ${((A1/A)*100).toFixed(0)}% of the required reinforcement.`;
+        } else {
+            badge.className = "status-badge bg-fail";
+            badge.innerText = `FAIL: Pad Required (Deficit = ${deficit.toFixed(1)} mm²)`;
+            insight.innerText = "The available area does not satisfy the 50% replacement rule. Additional reinforcement is necessary.";
+        }
+
+        // Area Bar Chart Updates
+        const maxScale = Math.max(A, A_avail) * 1.05;
+        if (maxScale > 0) {
+            document.getElementById('barReq').style.width = `${(A / maxScale) * 100}%`;
+            document.getElementById('barA1').style.width = `${(A1 / maxScale) * 100}%`;
+            document.getElementById('barA2').style.width = `${(A2 / maxScale) * 100}%`;
+        }
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
