@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-33 External Pressure on Heads | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 320px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
+        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #0056b3; }
+        .highlight-box { display: flex; justify-content: space-between; background: #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-family: monospace; font-size: 1.1em; border: 1px solid #cbd5e1; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 0.9em; font-weight: bold; color: white; margin-top: 10px; width: 100%; text-align: center; box-sizing: border-box; }
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        .pa-val { font-size: 1.8em; font-weight: bold; color: #0056b3; margin: 10px 0; }
+        .note { font-size: 0.85em; color: #666; font-style: italic; }
+        
+        /* Bar Chart Styles */
+        .chart-container { margin-top: 20px; }
+        .bar-wrap { margin-bottom: 15px; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 25px; overflow: hidden; }
+        .bar-fill { height: 100%; transition: width 0.4s ease; }
+        .fill-pa { background-color: #0056b3; }
+        .fill-p { background-color: #ff9800; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-33 Formed Heads (External Pressure)</h2>
+    
+    <div class="input-section">
+        <h3>Geometry & Design Inputs</h3>
+        <div class="form-group">
+            <label>Head Type</label>
+            <select id="valType" onchange="toggleLo(); calculate();">
+                <option value="ellip">2:1 Ellipsoidal [UG-33(d)]</option>
+                <option value="tori">Torispherical (F&D) [UG-33(e)]</option>
+                <option value="hemi">Hemispherical [UG-33(c)]</option>
+            </select>
+        </div>
+        <div class="form-group"><label>Outside Diameter (Do) [mm]</label><input type="number" id="valDo" value="1500" oninput="calculate()"></div>
+        <div class="form-group" id="groupLo" style="display:none;"><label>Outside Crown Radius (Lo) [mm]</label><input type="number" id="valLo" value="1500" oninput="calculate()"></div>
+        
+        <div class="form-group"><label>Assumed Nom. Thickness (t) [mm]</label><input type="number" id="valT" value="16" oninput="calculate()"></div>
+        <div class="form-group"><label>Corrosion Allowance (Ca) [mm]</label><input type="number" id="valCa" value="3" oninput="calculate()"></div>
+        <div class="form-group"><label>Design Ext. Pressure (P) [MPa]</label><input type="number" id="valP" value="0.6" step="0.1" oninput="calculate()"></div>
+        
+        <h3>Material Parameters (Sec II, Part D)</h3>
+        <div class="form-group"><label>Factor B [MPa] (Enter 0 if elastic)</label><input type="number" id="valB" value="85" oninput="calculate()"></div>
+        <div class="form-group"><label>Modulus of Elasticity (E) [MPa]</label><input type="number" id="valE" value="200000" oninput="calculate()"></div>
+    </div>
+
+    <div class="output-section">
+        <h3>Evaluation Results</h3>
+        
+        <div class="highlight-box">
+            <span><strong>Equiv. Radius (Ro):</strong> <span id="outRo">--</span> mm</span>
+            <span><strong>Ro / te:</strong> <span id="outRoTe">--</span></span>
+        </div>
+        
+        <div class="highlight-box" style="background: #fff3cd; border-color: #ffeeba; color: #856404;">
+            <span><strong>Calculated Factor A:</strong> <span id="outA" style="font-weight:bold; font-size: 1.2em;">--</span></span>
+        </div>
+        <p class="note">Use Factor A in ASME Sec II Part D, Subpart 3, Fig G to find Factor B.</p>
+
+        <div class="result-card">
+            <div><strong>Max Allowable External Pressure (Pa)</strong></div>
+            <div class="pa-val" id="outPa">-- MPa</div>
+            <div id="outMode" style="font-size: 0.9em; color: #555;">Governing Mode: --</div>
+            
+            <div id="statusBadge" class="status-badge">--</div>
+        </div>
+
+        <div class="chart-container">
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Allowable Pressure (Pa)</span> <span id="lblPa">-- MPa</span></div>
+                <div class="bar-bg"><div id="barPa" class="bar-fill fill-pa" style="width: 100%;"></div></div>
+            </div>
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Design Pressure (P)</span> <span id="lblP">-- MPa</span></div>
+                <div class="bar-bg"><div id="barP" class="bar-fill fill-p" style="width: 0%;"></div></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function toggleLo() {
+        const type = document.getElementById('valType').value;
+        document.getElementById('groupLo').style.display = (type === 'tori') ? 'block' : 'none';
+    }
+
+    function calculate() {
+        const type = document.getElementById('valType').value;
+        const Do = parseFloat(document.getElementById('valDo').value) || 0;
+        const Lo = parseFloat(document.getElementById('valLo').value) || 0;
+        const t = parseFloat(document.getElementById('valT').value) || 0;
+        const Ca = parseFloat(document.getElementById('valCa').value) || 0;
+        const P = parseFloat(document.getElementById('valP').value) || 0;
+        
+        const B = parseFloat(document.getElementById('valB').value) || 0;
+        const E = parseFloat(document.getElementById('valE').value) || 0;
+
+        const te = t - Ca;
+        if (te <= 0 || Do <= 0) {
+            document.getElementById('outPa').innerText = "Invalid Geometry";
+            return;
+        }
+
+        // Determine Ro
+        let Ro = 0;
+        if (type === 'hemi') Ro = Do / 2;
+        else if (type === 'ellip') Ro = 0.9 * Do;
+        else if (type === 'tori') Ro = Lo;
+
+        const ratioRoTe = Ro / te;
+        const factorA = 0.125 / ratioRoTe;
+
+        document.getElementById('outRo').innerText = Ro.toFixed(1);
+        document.getElementById('outRoTe').innerText = ratioRoTe.toFixed(2);
+        document.getElementById('outA').innerText = factorA.toFixed(5);
+
+        let Pa = 0;
+        let mode = "";
+
+        if (B > 0) {
+            Pa = B / ratioRoTe;
+            mode = "Plastic Yielding (Factor B evaluated)";
+        } else {
+            Pa = (0.0625 * E) / (Math.pow(ratioRoTe, 2));
+            mode = "Elastic Buckling (Modulus E evaluated)";
+        }
+
+        const isPass = P <= Pa;
+
+        // Update Text
+        document.getElementById('outPa').innerText = `${Pa.toFixed(3)} MPa`;
+        document.getElementById('outMode').innerText = `Governing Mode: ${mode}`;
+        
+        const badge = document.getElementById('statusBadge');
+        if (isPass) {
+            badge.className = "status-badge bg-pass";
+            badge.innerText = "PASS: Thickness is Adequate";
+        } else {
+            badge.className = "status-badge bg-fail";
+            badge.innerText = "FAIL: Increase Thickness";
+        }
+
+        // Update Chart
+        const maxScale = Math.max(Pa, P) * 1.1; 
+        document.getElementById('lblPa').innerText = Pa.toFixed(3) + " MPa";
+        document.getElementById('lblP').innerText = P.toFixed(3) + " MPa";
+        
+        document.getElementById('barPa').style.width = maxScale > 0 ? `${(Pa / maxScale) * 100}%` : "0%";
+        document.getElementById('barP').style.width = maxScale > 0 ? `${(P / maxScale) * 100}%` : "0%";
+    }
+
+    // Initialize
+    toggleLo();
+    calculate();
+</script>
+</body>
+</html>
