@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASME UG-37 Advanced Nozzle Reinforcement | OwlIndex</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
+        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
+        .input-section, .output-section { flex: 1; min-width: 350px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
+        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .note { font-size: 0.85em; color: #666; font-style: italic; margin-bottom: 15px; display: block; }
+        
+        .section-title { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: #444; margin-top: 25px;}
+        
+        .area-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .area-box { background: #e9ecef; padding: 12px; border-radius: 6px; text-align: center; border: 1px solid #ddd;}
+        .area-val { font-size: 1.4em; font-weight: bold; color: #333; margin-top: 5px;}
+        
+        .status-badge { display: inline-block; padding: 10px 12px; border-radius: 4px; font-size: 1em; font-weight: bold; color: white; width: 100%; text-align: center; box-sizing: border-box; margin-top: 10px; margin-bottom: 10px;}
+        .bg-pass { background-color: #28a745; }
+        .bg-fail { background-color: #dc3545; }
+        .bg-neutral { background-color: #6c757d; }
+        
+        /* Bar Chart Styles */
+        .chart-box { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e2e8f0;}
+        .bar-wrap { margin-bottom: 15px; position: relative;}
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { width: 100%; background-color: #e9ecef; border-radius: 5px; height: 35px; overflow: hidden; display: flex; position: relative;}
+        .bar-fill { height: 100%; transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8em; font-weight: bold; overflow: hidden; white-space: nowrap; }
+        
+        .fill-req { background-color: #dc3545; } 
+        .fill-a1 { background-color: #0056b3; } 
+        .fill-a2 { background-color: #17a2b8; } 
+        .fill-a3 { background-color: #6f42c1; } 
+        .fill-pad { background-color: #ffc107; color: #333; }
+        
+        .limit-line { position: absolute; top: 0; bottom: 0; width: 2px; background-color: #333; z-index: 10; border-right: 1px dashed white;}
+        .fr-box { background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; color: #856404; font-size: 0.9em; margin-bottom: 15px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ASME Sec VIII Div 1 UG-37: Master Reinforcement Calculator</h2>
+    
+    <div class="input-section">
+        <p class="note">Enter dimensions in their corroded state. Evaluates area replacement, dissimilar materials (fr), internal projections, and reinforcing pad sizing.</p>
+        
+        <div class="form-group"><label>Finished Opening Diameter (d) [mm]</label><input type="number" id="valD" value="200" oninput="calculate()"></div>
+        
+        <h4 class="section-title">Shell Parameters</h4>
+        <div class="form-group"><label>Required Shell Thickness (tr) [mm]</label><input type="number" id="valTr" value="10" oninput="calculate()"></div>
+        <div class="form-group"><label>Actual Shell Thickness (t) [mm]</label><input type="number" id="valT" value="12" oninput="calculate()"></div>
+        <div class="form-group"><label>Shell Allowable Stress (Ss) [MPa]</label><input type="number" id="valSs" value="138" oninput="calculate()"></div>
+        
+        <h4 class="section-title">Nozzle Parameters</h4>
+        <div class="form-group"><label>Required Nozzle Thickness (trn) [mm]</label><input type="number" id="valTrn" value="3" oninput="calculate()"></div>
+        <div class="form-group"><label>Actual Nozzle Thickness (tn) [mm]</label><input type="number" id="valTn" value="6" oninput="calculate()"></div>
+        <div class="form-group"><label>Nozzle Allowable Stress (Sn) [MPa]</label><input type="number" id="valSn" value="110" oninput="calculate()"></div>
+        <div class="form-group"><label>Internal Projection Length (hint) [mm]</label><input type="number" id="valHint" value="15" oninput="calculate()"></div>
+
+        <h4 class="section-title">Pad Iteration (If Required)</h4>
+        <div class="form-group">
+            <label>Select Pad Plate Thickness (tp) [mm]: <span id="lblTp" style="color:#0056b3;">10</span></label>
+            <input type="range" id="valTp" min="3" max="50" step="1" value="10" oninput="calculate()">
+        </div>
+    </div>
+
+    <div class="output-section">
+        
+        <div class="fr-box" id="frDisplay">Stress Ratio (fr): 1.00</div>
+
+        <div class="area-grid">
+            <div class="area-box" style="border-top: 4px solid #dc3545;">
+                <div style="font-size: 0.85em; color: #555;">Required Area (A)</div>
+                <div class="area-val" id="outA">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #28a745;">
+                <div style="font-size: 0.85em; color: #555;">Total Available (A1+A2+A3)</div>
+                <div class="area-val" id="outAvail">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #0056b3;">
+                <div style="font-size: 0.85em; color: #555;">Shell Excess (A1)</div>
+                <div class="area-val" id="outA1">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #17a2b8;">
+                <div style="font-size: 0.85em; color: #555;">Nozzle Ext. Excess (A2)</div>
+                <div class="area-val" id="outA2">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #6f42c1;">
+                <div style="font-size: 0.85em; color: #555;">Internal Projection (A3)</div>
+                <div class="area-val" id="outA3">--</div>
+            </div>
+            <div class="area-box" style="border-top: 4px solid #ffc107;">
+                <div style="font-size: 0.85em; color: #555;">Deficit (A5 Required)</div>
+                <div class="area-val" id="outDeficit">--</div>
+            </div>
+        </div>
+
+        <div id="statusBadge" class="status-badge">--</div>
+
+        <div class="chart-box">
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Required Reinforcement (A)</span></div>
+                <div class="bar-bg"><div id="barReq" class="bar-fill fill-req" style="width: 100%;">A</div></div>
+            </div>
+            
+            <div class="bar-wrap">
+                <div class="bar-label"><span>Available Reinforcement</span></div>
+                <div class="bar-bg" id="barStackContainer">
+                    <div id="barA1" class="bar-fill fill-a1" style="width: 0%;" title="Shell Area A1">A1</div>
+                    <div id="barA2" class="bar-fill fill-a2" style="width: 0%;" title="Nozzle Area A2">A2</div>
+                    <div id="barA3" class="bar-fill fill-a3" style="width: 0%;" title="Internal Area A3">A3</div>
+                    <div id="barPadArea" class="bar-fill fill-pad" style="width: 0%; display: none;" title="Deficit / Pad Required">Pad Req</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-box" id="padSizingSection">
+            <h4 style="margin-top:0; color:#333;">Reinforcing Pad Sizing</h4>
+            <div id="padBadge" class="status-badge bg-neutral" style="margin-bottom: 15px;">Awaiting pad calculation...</div>
+            
+            <div style="display:flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9em;">
+                <span><strong>Required O.D. (Dp):</strong> <span id="outDp" style="color:#0056b3; font-weight:bold;">--</span></span>
+                <span><strong>2d Limit:</strong> <span id="outLimit">--</span></span>
+            </div>
+
+            <div class="bar-wrap">
+                <div class="bar-bg">
+                    <div id="barDp" class="bar-fill fill-pad" style="color:#333;">Dp</div>
+                    <div id="limitMarker" class="limit-line" title="2d Boundary Limit"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const d = parseFloat(document.getElementById('valD').value) || 0;
+        const tr = parseFloat(document.getElementById('valTr').value) || 0;
+        const t = parseFloat(document.getElementById('valT').value) || 0;
+        const Ss = parseFloat(document.getElementById('valSs').value) || 0;
+        const trn = parseFloat(document.getElementById('valTrn').value) || 0;
+        const tn = parseFloat(document.getElementById('valTn').value) || 0;
+        const Sn = parseFloat(document.getElementById('valSn').value) || 0;
+        const hint = parseFloat(document.getElementById('valHint').value) || 0;
+        const tp = parseFloat(document.getElementById('valTp').value) || 0;
+
+        document.getElementById('lblTp').innerText = tp;
+
+        if (d <= 0 || tr <= 0 || t <= 0 || Ss <= 0 || Sn <= 0) return;
+
+        // Calculate Stress Ratio
+        const fr = Math.min(1.0, Sn / Ss);
+        const frText = fr < 1.0 
+            ? `Stress Ratio (fr): ${fr.toFixed(3)} - Nozzle area credited at reduced value.`
+            : `Stress Ratio (fr): 1.00 - Full area credit applied.`;
+        document.getElementById('frDisplay').innerText = frText;
+
+        // 1. Required Area A
+        const A = d * tr;
+
+        // 2. Shell Area A1
+        let A1 = 0;
+        if (t > tr) {
+            const limitX = Math.max(d, 2 * (t + tn));
+            A1 = limitX * (t - tr);
+        }
+
+        // 3. Nozzle Ext Area A2
+        let A2 = 0;
+        if (tn > trn) {
+            const limitY2 = Math.min(2.5 * t, 2.5 * tn);
+            A2 = 2 * limitY2 * (tn - trn) * fr;
+        }
+
+        // 4. Nozzle Int Area A3
+        let A3 = 0;
+        if (hint > 0) {
+            const limitY3 = Math.min(2.5 * t, 2.5 * tn, hint);
+            A3 = 2 * limitY3 * tn * fr; 
+        }
+
+        const A_avail = A1 + A2 + A3;
+        const deficit = Math.max(0, A - A_avail);
+
+        // Update Text
+        document.getElementById('outA').innerText = A.toFixed(1);
+        document.getElementById('outAvail').innerText = A_avail.toFixed(1);
+        document.getElementById('outA1').innerText = A1.toFixed(1);
+        document.getElementById('outA2').innerText = A2.toFixed(1);
+        document.getElementById('outA3').innerText = A3.toFixed(1);
+        document.getElementById('outDeficit').innerText = deficit.toFixed(1);
+
+        const badge = document.getElementById('statusBadge');
+        const padBarArea = document.getElementById('barPadArea');
+        const padSection = document.getElementById('padSizingSection');
+
+        if (deficit <= 0) {
+            badge.className = "status-badge bg-pass";
+            badge.innerText = "PASS: Inherently Reinforced (No Pad Required)";
+            padBarArea.style.display = "none";
+            padSection.style.opacity = "0.3"; // Dim the pad section if not needed
+            padSection.style.pointerEvents = "none";
+        } else {
+            badge.className = "status-badge bg-fail";
+            badge.innerText = `FAIL: Reinforcing Pad Required (A5 = ${deficit.toFixed(1)} mm²)`;
+            padBarArea.style.display = "flex";
+            padBarArea.innerText = `${deficit.toFixed(0)}`;
+            padSection.style.opacity = "1";
+            padSection.style.pointerEvents = "auto";
+        }
+
+        // Area Bar Chart Updates
+        const maxScaleA = Math.max(A, A_avail);
+        document.getElementById('barReq').style.width = maxScaleA > 0 ? `${(A / maxScaleA) * 100}%` : "0%";
+        document.getElementById('barA1').style.width = maxScaleA > 0 ? `${(A1 / maxScaleA) * 100}%` : "0%";
+        document.getElementById('barA2').style.width = maxScaleA > 0 ? `${(A2 / maxScaleA) * 100}%` : "0%";
+        document.getElementById('barA3').style.width = maxScaleA > 0 ? `${(A3 / maxScaleA) * 100}%` : "0%";
+        
+        if (deficit > 0) {
+            padBarArea.style.width = `${(deficit / maxScaleA) * 100}%`;
+        }
+
+        // --- Pad Sizing Logic ---
+        if (deficit > 0 && tp > 0) {
+            const Dp = d + (deficit / tp);
+            const D_limit = 2 * d;
+
+            document.getElementById('outDp').innerText = Dp.toFixed(1) + " mm";
+            document.getElementById('outLimit').innerText = D_limit.toFixed(1) + " mm";
+
+            const padBadge = document.getElementById('padBadge');
+            const barDp = document.getElementById('barDp');
+            const limitMarker = document.getElementById('limitMarker');
+
+            if (Dp <= D_limit) {
+                padBadge.className = "status-badge bg-pass";
+                padBadge.innerText = "PASS: Pad fits within effective boundaries.";
+                barDp.className = "bar-fill fill-pad";
+            } else {
+                padBadge.className = "status-badge bg-fail";
+                padBadge.innerText = "FAIL: Pad too wide. Increase plate thickness.";
+                barDp.className = "bar-fill fill-req"; // Make it red
+            }
+
+            const maxScaleDp = Math.max(Dp, D_limit) * 1.1; 
+            if (maxScaleDp > 0) {
+                barDp.style.width = `${(Dp / maxScaleDp) * 100}%`;
+                limitMarker.style.left = `${(D_limit / maxScaleDp) * 100}%`;
+            }
+        } else {
+            document.getElementById('outDp').innerText = "--";
+            document.getElementById('outLimit').innerText = "--";
+            document.getElementById('padBadge').className = "status-badge bg-neutral";
+            document.getElementById('padBadge').innerText = "Pad evaluation disabled (Not Required).";
+            document.getElementById('barDp').style.width = "0%";
+        }
+    }
+
+    // Initialize
+    calculate();
+</script>
+</body>
+</html>
