@@ -3,91 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASME UG-23 Stress Calculator | SAS</title>
+    <title>SAS | Master Design Suite</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; padding: 20px; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 30px; }
-        h2 { width: 100%; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; }
-        .input-section, .output-section { flex: 1; min-width: 300px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
-        input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .result-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #ccc; }
-        .pass { border-left-color: #28a745; }
-        .fail { border-left-color: #dc3545; }
-        .status-badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; }
-        .bg-pass { background-color: #28a745; }
-        .bg-fail { background-color: #dc3545; }
-        .bar-container { background: #e9ecef; width: 100%; height: 20px; border-radius: 10px; margin-top: 10px; overflow: hidden; position: relative; }
-        .bar-fill { height: 100%; transition: width 0.3s ease; }
-        .bar-limit { position: absolute; height: 100%; width: 2px; background: red; top: 0; z-index: 10; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 0; }
+        .header { background-color: #0f172a; color: white; padding: 25px 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 1.6em; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .category { margin-bottom: 40px; }
+        .category-title { color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.3em; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; text-decoration: none; color: inherit; transition: all 0.2s; display: block; border-left: 4px solid #334155; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-left-color: #3b82f6; }
+        .card h3 { margin: 0 0 8px 0; font-size: 1.1em; color: #0f172a; }
+        .card p { margin: 0; font-size: 0.85em; color: #64748b; }
+        .badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.7em; font-weight: bold; margin-bottom: 8px; background: #e2e8f0; }
     </style>
 </head>
 <body>
+<div class="header">
+    <h1>SAS Engineering</h1>
+    <p style="margin:0 0 10px 0; font-size: 0.8em; opacity: 0.8;">
+        ASME Section VIII Div 1 Design Suite
+    </p>
 
-<div class="container">
-    <h2>ASME Sec VIII Div 1 UG-23 Stress Evaluation</h2>
-    
-    <div class="input-section">
-        <h3>Material & Applied Stresses (MPa)</h3>
-        <div class="form-group"><label>Allowable Stress (S)</label><input type="number" id="valS" value="138" oninput="calculate()"></div>
-        <div class="form-group"><label>Yield Strength (Sy)</label><input type="number" id="valSy" value="260" oninput="calculate()"></div>
-        <div class="form-group"><label>Applied General Membrane (Pm)</label><input type="number" id="valPm" value="95" oninput="calculate()"></div>
-        <div class="form-group"><label>Applied Local Membrane (PL)</label><input type="number" id="valPL" value="110" oninput="calculate()"></div>
-        <div class="form-group"><label>Applied Primary Bending (Pb)</label><input type="number" id="valPb" value="60" oninput="calculate()"></div>
-        <div class="form-group"><label>Applied Shear (Tau)</label><input type="number" id="valTau" value="75" oninput="calculate()"></div>
-    </div>
-
-    <div class="output-section">
-        <h3>Compliance Results</h3>
-        <div id="resPm" class="result-card"></div>
-        <div id="resPLPb" class="result-card"></div>
-        <div id="resTau" class="result-card"></div>
-        <p><strong>Factor of Safety against Yield (Sy / Pm): </strong> <span id="fos"></span></p>
-    </div>
+    <span class="beta-badge">BETA • UNDER DEVELOPMENT</span>
 </div>
 
-<script>
-    function calculate() {
-        const S = parseFloat(document.getElementById('valS').value) || 0;
-        const Sy = parseFloat(document.getElementById('valSy').value) || 0;
-        const Pm = parseFloat(document.getElementById('valPm').value) || 0;
-        const PL = parseFloat(document.getElementById('valPL').value) || 0;
-        const Pb = parseFloat(document.getElementById('valPb').value) || 0;
-        const Tau = parseFloat(document.getElementById('valTau').value) || 0;
+<div class="container">
 
-        updateCard('resPm', 'General Membrane [UG-23(a)]', Pm, S);
-        updateCard('resPLPb', 'Local + Bending [UG-23(e)]', PL + Pb, 1.5 * S);
-        updateCard('resTau', 'Maximum Shear [UG-23(d)]', Tau, 0.8 * S);
+    <div class="intro">
+        <h2>Pressure Vessel Engineering Calculation Suite</h2>
+
+        <p>
+            A browser-based engineering toolset for selected pressure vessel
+            design calculations based on ASME Section VIII, Division 1.
+        </p>
+
+        <p>
+            The suite is designed to make engineering calculations easier to
+            perform, review and understand by showing key inputs,
+            intermediate results and final design checks.
+        </p>
+
+        <div class="actions">
+            <a href="Documentation.html" class="action-btn">Documentation</a>
+
+            <a href="https://geasskami.github.io/ASME-design-/"
+               class="action-btn secondary"
+               target="_blank">
+                GitHub Repository
+            </a>
+
+            <a href="https://github.com/GeassKami/ASME-design-/issues"
+               class="action-btn secondary"
+               target="_blank">
+                Report an Issue
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
         
-        document.getElementById('fos').innerText = Pm > 0 ? (Sy / Pm).toFixed(2) : "N/A";
-    }
+        <div class="category">
+            <h3 class="category-title">Pressure Boundaries & design parameters</h3>
+            <div class="grid">
+                <a href="UG27.html" class="card"><span class="badge">UG-27</span><h3>Internal Shell Thickness</h3><p>Cylindrical and spherical shell calculations.</p></a>
+                <a href="UG32.html" class="card"><span class="badge">UG-32</span><h3>Internal Formed Heads</h3><p>Ellipsoidal, Torispherical, Hemispherical.</p></a>
+                <a href="UG28.html" class="card"><span class="badge">UG-28</span><h3>External Shell Buckling</h3><p>Iterative external pressure evaluation.</p></a>
+                <a href="UG33.html" class="card"><span class="badge">UG-33</span><h3>External Convex Heads</h3><p>Buckling analysis for formed heads.</p></a>
+            </div>
+        </div>
 
-    function updateCard(elementId, title, applied, limit) {
-        const isPass = applied <= limit;
-        const maxScale = Math.max(limit * 1.2, applied * 1.1); // Scale bar dynamically
-        const fillPercent = Math.min((applied / maxScale) * 100, 100);
-        const limitPercent = (limit / maxScale) * 100;
+        <div class="category">
+            <h3 class="category-title">Nozzle Reinforcement & Weld Joints</h3>
+            <div class="grid">
+                <a href="UG37.html" class="card"><span class="badge">UG-37</span><h3>Basic Reinforcement</h3><p>Standard area replacement rule.</p></a>
+                <a href="UG37m.html" class="card"><span class="badge">UG-37</span><h3>Master Reinforcement</h3><p>Includes internal projections and stress ratios.</p></a>
+                <a href="UG37pad.html" class="card"><span class="badge">UG-37/40</span><h3>Pad Sizing Tool</h3><p>Calculates required Pad O.D. and limits.</p></a>
+                <a href="UG39.html" class="card"><span class="badge">UG-39</span><h3>Flat Head Reinforcement</h3><p>50% area replacement for flat covers.</p></a>
+                <a href="UW16JE.html" class="card"><span class="badge">UW-16</span><h3>Weld Sizing & Efficiency</h3><p>Joint efficiency and fillet weld leg sizes.</p></a>
+            </div>
+        </div>
 
-        const card = document.getElementById(elementId);
-        card.className = `result-card ${isPass ? 'pass' : 'fail'}`;
-        
-        card.innerHTML = `
-            <div>
-                <strong>${title}</strong>
-                <span class="status-badge ${isPass ? 'bg-pass' : 'bg-fail'}">${isPass ? 'PASS' : 'FAIL'}</span>
+        <div class="category">
+            <h3 class="category-title">Flange Design & Bolt Connections</h3>
+            <div class="grid">
+                <a href="Ap2FD.html" class="card"><span class="badge">APP-2</span><h3>Flange Moment</h3><p>Operating and seating moment calculations.</p></a>
+                <a href="Ap2Bolt.html" class="card"><span class="badge">APP-2</span><h3>Bolt Sizing & Loads</h3><p>Area checks and over-bolting penalties.</p></a>
             </div>
-            <div style="font-size: 0.85em; color: #555; margin-top: 5px;">
-                Applied: ${applied.toFixed(1)} MPa | Limit: ${limit.toFixed(1)} MPa
+        </div>
+
+        <div class="category">
+            <h3 class="category-title">MAWP, MDMT, Flat head & Stress limits</h3>
+            <div class="grid">
+                <a href="UG23.html" class="card"><span class="badge">UG-23</span><h3>Stress Compliance</h3><p>General membrane, local, and shear limits.</p></a>
+                <a href="UG34.html" class="card"><span class="badge">UG-34</span><h3>Unstayed Flat Heads</h3><p>Circular flat head bending thickness.</p></a>
+                <a href="UG9899.html" class="card"><span class="badge">UG-98/99</span><h3>MAWP & Shop Testing</h3><p>Limiting component MAWP and Test Pressures.</p></a>
+                <a href="UCS66.html" class="card"><span class="badge">UCS-66</span><h3>Brittle Fracture (MDMT)</h3><p>Exemption curves and temperature credits.</p></a>
             </div>
-            <div class="bar-container">
-                <div class="bar-fill ${isPass ? 'bg-pass' : 'bg-fail'}" style="width: ${fillPercent}%;"></div>
-                <div class="bar-limit" style="left: ${limitPercent}%;" title="Limit Threshold"></div>
-            </div>
-        `;
-    }
-    // Initialize
-    calculate();
-</script>
+        </div>
+
+        <div class="footer">
+            <strong>SAS Engineering</strong><br>
+
+            Independent engineering software project by
+            <strong>Suraj Anil Suryawanshi</strong>.
+
+            <br><br>
+
+            <strong>Engineering basis:</strong>
+            Selected methodologies from ASME BPVC Section VIII, Division 1.
+            ASME Section II, Part D is referenced where applicable.
+
+            <br><br>
+
+            <strong>Disclaimer:</strong>
+            This software is currently in beta and is not affiliated with,
+            endorsed by, or certified by ASME. Results are intended for
+            engineering study, preliminary design and independent calculation
+            checks. Always verify calculations against the applicable current
+            Code requirements and qualified engineering judgement before use
+            in an actual design.
+
+            <br><br>
+
+            © 2026 SurajAnilSuryawanshi
+        </div>
+
+    </div>
 </body>
 </html>
