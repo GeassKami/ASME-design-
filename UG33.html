@@ -20,6 +20,15 @@
         .pa-val { font-size: 1.8em; font-weight: bold; color: #0056b3; margin: 10px 0; }
         .note { font-size: 0.85em; color: #666; font-style: italic; }
         
+        .print-header {
+                display: none;
+        }
+
+        @media print {
+            .print-header {
+                display: block !important;
+            }
+        }
         /* Bar Chart Styles */
         .chart-container { margin-top: 20px; }
         .bar-wrap { margin-bottom: 15px; }
@@ -34,7 +43,38 @@
 
 <div class="container">
     <h2>ASME Sec VIII Div 1 UG-33 Formed Heads (External Pressure)</h2>
-    
+    <div class="report-toolbar">
+
+    <div class="toolbar-left">
+        <a href="MasterUI.html" class="toolbar-btn">
+            ← Back to Design Suite
+        </a>
+    </div>
+
+    <div class="toolbar-right">
+        <button class="toolbar-btn print" onclick="window.print()">
+            🖨 Print / Save Report
+        </button>
+    </div>
+
+</div>
+
+     <div class="print-header" style="display:"print-header";">
+
+        <h1>SAS Engineering</h1>
+
+        <p>
+            ASME Section VIII Division 1 Design Calculation
+        </p>
+
+        <hr>
+
+        <p>
+            <strong>Calculation:</strong>
+            UG-33 — Formed Heads Under External Pressure
+        </p>
+
+    </div>
     <div class="input-section">
         <h3>Geometry & Design Inputs</h3>
         <div class="form-group">
