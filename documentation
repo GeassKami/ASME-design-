@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>SAS Engineering | Documentation</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .header {
+            background: #0f172a;
+            color: white;
+            padding: 30px 50px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 25px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            color: #0f172a;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            color: #1e293b;
+        }
+
+        .module {
+            padding: 15px;
+            margin: 12px 0;
+            background: #f8fafc;
+            border-left: 4px solid #334155;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 25px;
+            padding: 9px 15px;
+            background: #0f172a;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .disclaimer {
+            background: #fff7ed;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="header">
+
+    <h1>SAS Engineering</h1>
+
+    <p>
+        ASME Section VIII Division 1 — Pressure Vessel Design Suite
+    </p>
+
+</div>
+
+
+<div class="container">
+
+    <a href="MasterUI.html" class="back">
+        ← Back to Design Suite
+    </a>
+
+
+    <div class="section">
+
+        <h2>About the Design Suite</h2>
+
+        <p>
+            SAS Engineering is a browser-based engineering calculation
+            suite developed for selected pressure vessel design
+            calculations based on ASME BPVC Section VIII, Division 1.
+        </p>
+
+        <p>
+            The objective is to make commonly used pressure vessel
+            calculations easier to access, understand and review.
+        </p>
+
+        <p>
+            The suite focuses on engineering transparency by showing
+            design inputs, calculation parameters and resulting
+            engineering checks rather than providing only a final number.
+        </p>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>Current Modules</h2>
+
+
+        <h3>Pressure Boundaries</h3>
+
+        <div class="module">
+            <strong>UG-27 — Internal Pressure: Shell Thickness</strong>
+            <br>
+            Cylindrical and spherical shell calculations.
+        </div>
+
+        <div class="module">
+            <strong>UG-32 — Formed Heads</strong>
+            <br>
+            Ellipsoidal, torispherical and hemispherical heads.
+        </div>
+
+        <div class="module">
+            <strong>UG-28 — External Pressure: Cylindrical Shells</strong>
+            <br>
+            External pressure and buckling evaluation.
+        </div>
+
+        <div class="module">
+            <strong>UG-33 — External Pressure: Formed Heads</strong>
+            <br>
+            External pressure evaluation for formed heads.
+        </div>
+
+
+        <h3>Openings, Reinforcement & Welds</h3>
+
+        <div class="module">
+            <strong>UG-37 — Opening Reinforcement</strong>
+            <br>
+            Required and available reinforcement area evaluation.
+        </div>
+
+        <div class="module">
+            <strong>UG-37 / UG-40 — Nozzle Reinforcement</strong>
+            <br>
+            Reinforcement pad and nozzle-related calculations.
+        </div>
+
+        <div class="module">
+            <strong>UW-16 — Weld Sizing</strong>
+            <br>
+            Weld sizing and joint efficiency calculations.
+        </div>
+
+
+        <h3>Flanges & Bolted Connections</h3>
+
+        <div class="module">
+            <strong>Appendix 2 — Flange Design</strong>
+            <br>
+            Operating and seating moment calculations.
+        </div>
+
+
+        <h3>Stress, MAWP & MDMT</h3>
+
+        <div class="module">
+            <strong>UG-23 — Stress Limits</strong>
+            <br>
+            General stress limit evaluation.
+        </div>
+
+        <div class="module">
+            <strong>UG-34 — Unstayed Flat Heads</strong>
+            <br>
+            Flat head thickness calculations.
+        </div>
+
+        <div class="module">
+            <strong>UG-98 / UG-99 — MAWP & Testing</strong>
+            <br>
+            MAWP and pressure testing calculations.
+        </div>
+
+        <div class="module">
+            <strong>UCS-66 — MDMT / Brittle Fracture</strong>
+            <br>
+            Material temperature and exemption curve evaluation.
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>Development Status</h2>
+
+        <p>
+            <strong>Beta / Under Development</strong>
+        </p>
+
+        <p>
+            The modules are being progressively developed and
+            independently checked. Additional calculations,
+            validation cases and usability improvements are planned.
+        </p>
+
+    </div>
+
+
+    <div class="section">
+
+        <h2>Important Engineering Disclaimer</h2>
+
+        <div class="disclaimer">
+
+            This software is currently in beta development and is
+            intended for engineering study, preliminary design and
+            independent calculation checks.
+
+            <br><br>
+
+            Users are responsible for independently verifying inputs,
+            assumptions, material properties, calculation methodology
+            and applicable Code requirements before using results for
+            engineering design, fabrication or certification.
+
+            <br><br>
+
+            This project is independently developed and is not
+            affiliated with, endorsed by, or certified by ASME.
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
