@@ -37,6 +37,53 @@
         .bar-fill { height: 100%; transition: width 0.4s ease; }
         .fill-pa { background-color: #0056b3; }
         .fill-p { background-color: #ff9800; }
+
+        .report-toolbar {
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0 30px 0;
+        padding: 12px 0;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        }
+
+        .toolbar-left,
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 9px 16px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #1e293b;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        }
+
+        .toolbar-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .toolbar-btn.print {
+            background: #0f172a;
+            color: white;
+            border-color: #0f172a;
+        }
+
+        .toolbar-btn.print:hover {
+                background: #1e293b;
+        }
     </style>
 </head>
 <body>
@@ -52,7 +99,10 @@
     </div>
 
     <div class="toolbar-right">
-        <button class="toolbar-btn print" onclick="window.print()">
+        <button
+            type="button"
+            class="toolbar-btn print"
+            onclick="window.print()">
             🖨 Print / Save Report
         </button>
     </div>
